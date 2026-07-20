@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guild - Los-Perversos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --green-bright: #20df60;
+      --green-mid: #15a845;
+      --green-dark: #0b4f21;
+      --black-deep: #050505;
+      --black-card: #0d110e;
+      --black-light: #161c18;
+      --border-color: #1f2c23;
+      --text-main: #e2e8f0;
+      --text-muted: #85998b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--black-deep);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* --- SCROLLBAR --- */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--black-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--green-mid); }
+
+    /* --- BACKGROUND TEXTURE --- */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(32, 223, 96, 0.05) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 90%, rgba(21, 168, 69, 0.03) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    #app { position: relative; z-index: 1; }
+
+    /* --- ORNAMENTAL DIVIDER --- */
+    .divider {
+      display: flex; align-items: center; gap: 1rem;
+      margin: 3rem 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border-color), transparent);
+    }
+    .divider-icon {
+      color: var(--green-mid);
+      font-size: 1rem;
+      opacity: 0.5;
+    }
+
+    /* --- HEADER / HERO --- */
+    .hero {
+      position: relative;
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(180deg, rgba(32, 223, 96, 0.03) 0%, transparent 100%);
+    }
+
+    .hero-emblem {
+      width: 100px; height: 100px;
+      border-radius: 24px;
+      border: 2px solid var(--green-dark);
+      box-shadow: 0 0 30px rgba(32, 223, 96, 0.05);
+      margin: 0 auto 1.5rem;
+      background: var(--black-card);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+      transform: rotate(45deg);
+      transition: all 0.4s ease;
+    }
+    .hero-emblem:hover {
+      transform: rotate(45deg) scale(1.05);
+      border-color: var(--green-bright);
+      box-shadow: 0 0 40px rgba(32, 223, 96, 0.2);
+    }
+    .hero-emblem svg { transform: rotate(-45deg); width: 50px; height: 50px; }
+
+    .guild-name {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(2.2rem, 6vw, 3.8rem);
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 30px rgba(32, 223, 96, 0.3), 0 2px 8px rgba(0,0,0,0.9);
+      letter-spacing: -0.02em;
+      position: relative; z-index: 1;
+    }
+    .guild-name span {
+      color: var(--green-bright);
+    }
+    .guild-subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 0.5rem;
+    }
+    .guild-description {
+      max-width: 580px;
+      margin: 1.5rem auto 0;
+      color: #a3b8aa;
+      font-style: italic;
+      font-size: 1rem;
+    }
+
+    .hero-stats {
+      display: flex; justify-content: center; gap: 3rem;
+      margin-top: 2.5rem;
+    }
+    .hero-stat-value {
+      font-family: 'Cinzel', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .hero-stat-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* --- NAV TABS --- */
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(5, 5, 5, 0.85);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-tab {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 1.2rem 2.5rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+      background: transparent; border-top: none; border-left: none; border-right: none;
+      font-weight: 600;
+    }
+    .nav-tab:hover { color: #ffffff; }
+    .nav-tab.active {
+      color: var(--green-bright);
+      border-bottom-color: var(--green-bright);
+      background: rgba(32, 223, 96, 0.02);
+    }
+
+    /* --- SECTIONS --- */
+    .section {
+      display: none;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+    .section.active { display: block; }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.12em;
+      margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1; height: 1px;
+      background: linear-gradient(to right, var(--border-color), transparent);
+    }
+
+    /* --- MEMBER CARDS --- */
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .member-card {
+      background: var(--black-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .member-card:hover {
+      border-color: rgba(32, 223, 96, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(32, 223, 96, 0.03);
+    }
+
+    .member-header {
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 1rem 1.2rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--black-light) 0%, var(--black-card) 100%);
+      border-bottom: 1px solid var(--border-color);
+      user-select: none;
+    }
+    .member-avatar {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--black-deep);
+      border: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--green-bright);
+      flex-shrink: 0;
+    }
+    .member-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #ffffff;
+      flex: 1;
+    }
+    .member-role {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+    .role-leader { background: rgba(32, 223, 96, 0.1); color: var(--green-bright); border: 1px solid rgba(32, 223, 96, 0.25); }
+    .role-officer { background: rgba(21, 168, 69, 0.1); color: #a4e2b9; border: 1px solid rgba(21, 168, 69, 0.2); }
+    .role-member { background: rgba(255,255,255,0.03); color: var(--text-muted); border: 1px solid var(--border-color); }
+
+    .expand-icon {
+      color: var(--text-muted);
+      transition: transform 0.3s;
+      font-size: 0.7rem;
+    }
+    .member-card.open .expand-icon { transform: rotate(180deg); color: var(--green-bright); }
+
+    .member-body {
+      display: none;
+      padding: 1rem 1.2rem;
+      background: #090c0a;
+    }
+    .member-card.open .member-body { display: block; }
+
+    .pj-item {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(31, 44, 35, 0.4);
+    }
+    .pj-item:last-child { border-bottom: none; }
+    .pj-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .pj-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #ffffff;
+    }
+    .pj-class {
+      font-size: 0.78rem; color: var(--text-muted);
+    }
+    .pj-level {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      color: var(--green-bright);
+      background: rgba(32, 223, 96, 0.06);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid rgba(32, 223, 96, 0.15);
+    }
+    .pj-oficios {
+      display: flex; flex-wrap: wrap; gap: 0.35rem;
+    }
+    .oficio-tag {
+      font-size: 0.65rem;
+      font-weight: 500;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+    .oficio-harvest { background: rgba(32, 223, 96, 0.08); color: #4ade80; border: 1px solid rgba(32, 223, 96, 0.15); }
+    .oficio-craft  { background: rgba(56, 189, 248, 0.08); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.15); }
+    .oficio-combat { background: rgba(248, 113, 113, 0.08); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.15); }
+
+    /* --- FORM STYLING --- */
+    .form-panel {
+      background: var(--black-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    .form-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .form-field { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; min-width: 200px; }
+    .form-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.05rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .form-input, .form-select {
+      background: var(--black-deep);
+      border: 1px solid var(--border-color);
+      color: #ffffff;
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--green-bright);
+      box-shadow: 0 0 10px rgba(32, 223, 96, 0.1);
+    }
+    .form-select option { background: var(--black-card); }
+
+    /* --- BUTTONS --- */
+    .btn {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.65rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .btn-gold {
+      background: var(--green-bright);
+      color: var(--black-deep);
+    }
+    .btn-gold:hover {
+      box-shadow: 0 0 20px rgba(32, 223, 96, 0.4);
+      filter: brightness(1.1);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--green-bright);
+      border: 1px solid rgba(32, 223, 96, 0.3);
+    }
+    .btn-outline:hover {
+      border-color: var(--green-bright);
+      background: rgba(32, 223, 96, 0.02);
+    }
+    .btn-danger {
+      background: rgba(248, 113, 113, 0.05);
+      color: #f87171;
+      border: 1px solid rgba(248, 113, 113, 0.15);
+      font-size: 0.68rem; padding: 0.3rem 0.6rem;
+    }
+    .btn-danger:hover { background: rgba(248, 113, 113, 0.1); border-color: #f87171; }
+
+    /* --- CALENDAR --- */
+    .calendar-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    .calendar-month {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      color: #ffffff;
+      letter-spacing: 0.05em;
+    }
+    .cal-nav-btn {
+      background: var(--black-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 36px; height: 36px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .cal-nav-btn:hover { border-color: var(--green-bright); color: var(--green-bright); }
+
+    .calendar-weekdays {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 6px; margin-bottom: 6px;
+    }
+    .weekday-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    .calendar-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .cal-day {
+      background: var(--black-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.5rem;
+      min-height: 80px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .cal-day:hover { border-color: var(--green-mid); }
+    .cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
+    .cal-day.today {
+      border-color: var(--green-bright);
+      background: rgba(32, 223, 96, 0.02);
+    }
+    .cal-day.today .day-num { color: var(--green-bright); font-weight: 700; }
+    .cal-day.has-event { border-color: rgba(32, 223, 96, 0.2); }
+
+    .day-num {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+    .day-event {
+      font-size: 0.65rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
+      padding: 0.15rem 0.3rem;
+      border-radius: 4px;
+      line-height: 1.3;
+    }
+    .event-dungeon { background: rgba(248, 113, 113, 0.1); color: #f87171; }
+    .event-boss    { background: rgba(192, 132, 252, 0.1); color: #c084fc; }
+    .event-harvest { background: rgba(74, 222, 128, 0.1); color: #4ade80; }
+    .event-almanax { background: rgba(250, 204, 21, 0.1); color: #facc15; }
+    .event-custom  { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+    .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* --- MODAL --- */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--black-card);
+      border: 1px solid var(--border-color);
+      border-top: 3px solid var(--green-bright);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .modal-title { font-family: 'Cinzel', serif; font-size: 1.1rem; color: #ffffff; margin-bottom: 1.5rem; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; }
+
+    /* --- NOTICE --- */
+    .notice {
+      background: rgba(32, 223, 96, 0.02);
+      border: 1px solid rgba(32, 223, 96, 0.1);
+      border-left: 3px solid var(--green-bright);
+      padding: 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #a3b8aa;
+      margin-bottom: 2rem;
+    }
+
+    .tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .selected-oficio {
+      display: flex; align-items: center; gap: 0.3rem;
+      background: rgba(32, 223, 96, 0.05);
+      border: 1px solid rgba(32, 223, 96, 0.2);
+      color: var(--green-bright);
+      font-size: 0.72rem; padding: 0.2rem 0.5rem;
+      border-radius: 4px; cursor: pointer;
+    }
+    .selected-oficio:hover { background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.2); color: #f87171; }
+
+    @media (max-width: 640px) {
+      .nav-tab { padding: 1rem; font-size: 0.7rem; letter-spacing: 0.08em; }
+      .hero-stats { gap: 1.5rem; }
+      .cal-day { min-height: 60px; }
+      .day-event { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-emblem">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 4L54 16V48L32 60L10 48V16L32 4Z" stroke="#20df60" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M32 14V50" stroke="#15a845" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="32" cy="32" r="6" fill="#20df60"/>
+      </svg>
+    </div>
+    <h1 class="guild-name" id="guildName">Los-<span>Perversos</span></h1>
+    <p class="guild-subtitle" id="guildServer">Servidor: Mono | Nivel de gremio: 42</p>
+    <p class="guild-description" id="guildDesc">
+      "Buscamos el poder en cada rincón de las Doce Tierras. El fin justifica los medios."
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-value" id="statUsers">0</div>
+        <div class="hero-stat-label">Jugadores</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value" id="statPJs">0</div>
+        <div class="hero-stat-label">Personajes</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value" id="statEvents">0</div>
+        <div class="hero-stat-label">Eventos este mes</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('members', this)">Miembros</button>
+    <button class="nav-tab" onclick="showSection('calendar', this)">Almanax</button>
+    <button class="nav-tab" onclick="showSection('settings', this)">Gremio</button>
+  </nav>
+
+  <!-- MEMBERS SECTION -->
+  <section class="section active" id="sec-members">
+    <div class="notice">
+      Haz clic en un jugador para ver sus personajes. Usa el formulario de abajo para agregar nuevos miembros.
+    </div>
+
+    <div class="section-title">Jugadores del Gremio</div>
+    <div class="members-grid" id="membersGrid"></div>
+
+    <div class="divider"><span class="divider-icon">◆</span></div>
+    <div class="section-title">Agregar Jugador</div>
+    <div class="form-panel">
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Nombre de usuario</label>
+          <input class="form-input" id="inp-user" placeholder="Ej: Xarok_GT" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Rol en el gremio</label>
+          <select class="form-select" id="inp-role">
+            <option value="member">Miembro</option>
+            <option value="officer">Oficial</option>
+            <option value="leader">Líder</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-gold" onclick="addMember()">Agregar Jugador</button>
+    </div>
+  </section>
+
+  <!-- CALENDAR SECTION -->
+  <section class="section" id="sec-calendar">
+    <div class="calendar-header">
+      <div class="calendar-month" id="calMonthLabel"></div>
+      <div class="calendar-nav">
+        <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+        <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div> Mazmorra grupal</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div> Boss / Archimonstruo</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div> Recolecta masiva</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#facc15"></div> Bonus Almanax</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div> Evento especial</div>
+    </div>
+
+    <div class="calendar-weekdays" id="calWeekdays"></div>
+    <div class="calendar-grid" id="calGrid"></div>
+
+    <div class="divider"><span class="divider-icon">◆</span></div>
+    <div class="section-title">Agregar Evento</div>
+    <div class="form-panel">
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Día del mes</label>
+          <input class="form-input" id="inp-evDay" type="number" min="1" max="31" placeholder="15" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Tipo de evento</label>
+          <select class="form-select" id="inp-evType">
+            <option value="dungeon">Mazmorra grupal</option>
+            <option value="boss">Boss / Archimonstruo</option>
+            <option value="harvest">Recolecta masiva</option>
+            <option value="almanax">Bonus Almanax</option>
+            <option value="custom">Evento especial</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Descripción</label>
+          <input class="form-input" id="inp-evDesc" placeholder="Ej: Mazmorra de Kanigroula x8" />
+        </div>
+      </div>
+      <button class="btn btn-gold" onclick="addEvent()">Agregar al Almanax</button>
+    </div>
+  </section>
+
+  <!-- SETTINGS SECTION -->
+  <section class="section" id="sec-settings">
+    <div class="section-title">Configuración del Gremio</div>
+    <div class="form-panel">
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Nombre del gremio</label>
+          <input class="form-input" id="set-name" value="Los-Perversos" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Nivel del gremio</label>
+          <input class="form-input" id="set-level" value="42" type="number" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Servidor</label>
+          <input class="form-input" id="set-server" value="Mono" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field" style="flex-basis:100%">
+          <label class="form-label">Descripción / Lema</label>
+          <input class="form-input" id="set-desc" value="Buscamos el poder en cada rincón de las Doce Tierras. El fin justifica los medios." />
+        </div>
+      </div>
+      <button class="btn btn-gold" onclick="saveSettings()">Guardar Cambios</button>
+    </div>
+
+    <div class="divider"><span class="divider-icon">◆</span></div>
+    <div class="section-title">Sincronización en la Nube</div>
+    <div class="form-panel" style="font-size:0.9rem; color:var(--text-muted); line-height:1.8;">
+      <p>Actualmente los datos se guardan de forma local en tu navegador. Estamos listos para conectar este panel con <strong style="color:var(--green-bright)">Firebase Firestore</strong> para que todos los miembros vean las actualizaciones en tiempo real desde cualquier dispositivo.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- MODAL: Agregar personaje -->
+<div class="modal-overlay" id="pjModal">
+  <div class="modal">
+    <div class="modal-title" id="pjModalTitle">Agregar personaje</div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Nombre del PJ</label>
+        <input class="form-input" id="pj-name" placeholder="Ej: Xaroken" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Clase</label>
+        <select class="form-select" id="pj-class">
+          <option>Yopuka</option><option>Cra</option><option>Ecaflip</option>
+          <option>Eniripsa</option><option>Feca</option><option>Osamodas</option><option>Pandawa</option>
+          <option>Sadida</option><option>Sacrógrito</option><option>Sram</option><option>Xelor</option>
+          <option>Tymador</option><option>Zúbal</option><option>Hiperago</option><option>Oginak</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Nivel</label>
+        <input class="form-input" id="pj-level" type="number" min="1" max="200" placeholder="200" />
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <div class="form-label" style="margin-bottom:0.5rem">Oficios</div>
+      <div class="form-row" style="margin-bottom:0.5rem">
+        <div class="form-field">
+          <select class="form-select" id="pj-oficio-select">
+            <optgroup label="Recolección">
+              <option value="Granjero|harvest">Granjero</option>
+              <option value="Leñador|harvest">Leñador</option>
+              <option value="Minero|harvest">Minero</option>
+              <option value="Pescador|harvest">Pescador</option>
+              <option value="Alquimista|harvest">Alquimista</option>
+              <option value="Cazador|harvest">Cazador</option>
+            </optgroup>
+            <optgroup label="Artesanías">
+              <option value="Forjador|craft">Forjador</option>
+              <option value="Escultor|craft">Escultor</option>
+              <option value="Sastre|craft">Sastre</option>
+              <option value="Zapatero|craft">Zapatero</option>
+              <option value="Joyero|craft">Joyero</option>
+              <option value="Manitas|craft">Manitas</option>
+              <option value="Conductor|craft">Conductor de Mágia</option>
+            </optgroup>
+          </select>
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button class="btn btn-outline" onclick="addOficioTag()">Agregar</button>
+        </div>
+      </div>
+      <div class="tag-list" id="pj-oficios-tags"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closePJModal()">Cancelar</button>
+      <button class="btn btn-gold" onclick="savePJ()">Guardar PJ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const WEEKDAYS = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+
+let state = JSON.parse(localStorage.getItem('dofus_guild_v3') || 'null') || {
+  guild: { name: 'Los-Perversos', level: 42, server: 'Mono', desc: 'Buscamos el poder en cada rincón de las Doce Tierras. El fin justifica los medios.' },
+  members: [
+    {
+      id: 1, username: 'Xarok_GT', role: 'leader',
+      pjs: [
+        { id: 101, name: 'Xaroken', cls: 'Yopuka', level: 200, oficios: [{ name:'Minero', type:'harvest' },{ name:'Forjador', type:'craft' }] },
+        { id: 102, name: 'XarokSupport', cls: 'Eniripsa', level: 180, oficios: [{ name:'Alquimista', type:'harvest' }] }
+      ]
+    },
+    {
+      id: 2, username: 'Sombra_Dark', role: 'officer',
+      pjs: [
+        { id: 201, name: 'LaSombra', cls: 'Sram', level: 195, oficios: [{ name:'Cazador', type:'harvest' }] }
+      ]
+    }
+  ],
+  events: {
+    '2026-07-05': [{ desc:'Mazmorra de Bwork Mage', type:'dungeon' }],
+    '2026-07-15': [{ desc:'Bonus EXP x2 Almanax', type:'almanax' }]
+  }
+};
+
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let editingMemberId = null;
+let tempOficios = [];
+let nextId = 1000;
+
+function save() { localStorage.setItem('dofus_guild_v3', JSON.stringify(state)); }
+
+// ===================== SECTIONS =====================
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'calendar') renderCalendar();
+  if (name === 'members') renderMembers();
+}
+
+// ===================== MEMBERS =====================
+function renderMembers() {
+  const grid = document.getElementById('membersGrid');
+  grid.innerHTML = '';
+  state.members.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'member-card';
+    card.id = 'card-' + m.id;
+    const roleClass = { leader:'role-leader', officer:'role-officer', member:'role-member' }[m.role];
+    const roleLabel = { leader:'Líder', officer:'Oficial', member:'Miembro' }[m.role];
+    const initials = m.username.slice(0,2).toUpperCase();
+    card.innerHTML = `
+      <div class="member-header" onclick="toggleCard(${m.id})">
+        <div class="member-avatar">${initials}</div>
+        <div>
+          <div class="member-name">${m.username}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.1rem">${m.pjs.length} personaje${m.pjs.length !== 1 ? 's' : ''}</div>
+        </div>
+        <span class="member-role ${roleClass}">${roleLabel}</span>
+        <span class="expand-icon">&#9660;</span>
+      </div>
+      <div class="member-body">
+        <div id="pjlist-${m.id}">${renderPJList(m)}</div>
+        <div style="display:flex;gap:0.5rem;margin-top:1rem">
+          <button class="btn btn-outline" style="font-size:0.68rem;padding:0.4rem 0.8rem" onclick="openPJModal(${m.id})">+ Agregar PJ</button>
+          <button class="btn btn-danger" onclick="removeMember(${m.id})">Eliminar jugador</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+  updateStats();
+}
+
+function renderPJList(m) {
+  if (!m.pjs.length) return '<p style="color:var(--text-muted);font-style:italic;font-size:0.8rem;padding:0.3rem 0">Sin personajes registrados.</p>';
+  return m.pjs.map(pj => `
+    <div class="pj-item">
+      <div class="pj-header">
+        <div>
+          <span class="pj-name">${pj.name}</span>
+          <span class="pj-class"> - ${pj.cls}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <span class="pj-level">Nv ${pj.level}</span>
+          <button class="btn btn-danger" onclick="removePJ(${m.id},${pj.id})">x</button>
+        </div>
+      </div>
+      <div class="pj-oficios">
+        ${pj.oficios.map(o => `<span class="oficio-tag oficio-${o.type}">${o.name}</span>`).join('') || '<span style="font-size:0.7rem;color:var(--text-muted);font-style:italic">Sin oficios</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleCard(id) {
+  const card = document.getElementById('card-' + id);
+  if(card) card.classList.toggle('open');
+}
+
+function addMember() {
+  const username = document.getElementById('inp-user').value.trim();
+  const role = document.getElementById('inp-role').value;
+  if (!username) { alert('Ingresa un nombre de usuario.'); return; }
+  nextId++;
+  state.members.push({ id: nextId, username, role, pjs: [] });
+  save(); renderMembers();
+  document.getElementById('inp-user').value = '';
+}
+
+function removeMember(id) {
+  if (!confirm('¿Eliminar este jugador y todos sus personajes?')) return;
+  state.members = state.members.filter(m => m.id !== id);
+  save(); renderMembers();
+}
+
+function removePJ(memberId, pjId) {
+  const m = state.members.find(m => m.id === memberId);
+  if (!m) return;
+  m.pjs = m.pjs.filter(p => p.id !== pjId);
+  save(); renderMembers();
+}
+
+function updateStats() {
+  document.getElementById('statUsers').textContent = state.members.length;
+  document.getElementById('statPJs').textContent = state.members.reduce((a,m) => a + m.pjs.length, 0);
+  const monthKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+  const evCount = Object.keys(state.events).filter(k => k.startsWith(monthKey)).reduce((a, k) => a + state.events[k].length, 0);
+  document.getElementById('statEvents').textContent = evCount;
+}
+
+// ===================== PJ MODAL =====================
+function openPJModal(memberId) {
+  editingMemberId = memberId;
+  tempOficios = [];
+  document.getElementById('pj-name').value = '';
+  document.getElementById('pj-level').value = '';
+  document.getElementById('pj-oficios-tags').innerHTML = '';
+  const m = state.members.find(m => m.id === memberId);
+  document.getElementById('pjModalTitle').textContent = 'Agregar PJ para ' + m.username;
+  document.getElementById('pjModal').classList.add('open');
+}
+
+function closePJModal() {
+  document.getElementById('pjModal').classList.remove('open');
+  editingMemberId = null;
+}
+
+function addOficioTag() {
+  const sel = document.getElementById('pj-oficio-select');
+  const [name, type] = sel.value.split('|');
+  if (tempOficios.find(o => o.name === name)) return;
+  tempOficios.push({ name, type });
+  renderOficioTags();
+}
+
+function renderOficioTags() {
+  const container = document.getElementById('pj-oficios-tags');
+  container.innerHTML = tempOficios.map((o, i) =>
+    `<span class="selected-oficio" onclick="removeOficioTag(${i})" title="Clic para quitar">${o.name} ×</span>`
+  ).join('');
+}
+
+function removeOficioTag(i) {
+  tempOficios.splice(i, 1);
+  renderOficioTags();
+}
+
+function savePJ() {
+  const name = document.getElementById('pj-name').value.trim();
+  const cls  = document.getElementById('pj-class').value;
+  const level = parseInt(document.getElementById('pj-level').value) || 1;
+  if (!name) { alert('Ingresa el nombre del personaje.'); return; }
+  const m = state.members.find(m => m.id === editingMemberId);
+  if (!m) return;
+  nextId++;
+  m.pjs.push({ id: nextId, name, cls, level, oficios: [...tempOficios] });
+  save(); renderMembers(); closePJModal();
+}
+
+// ===================== CALENDAR =====================
+function renderCalendar() {
+  const label = document.getElementById('calMonthLabel');
+  label.textContent = MONTHS[currentMonth] + ' ' + currentYear;
+
+  const wdays = document.getElementById('calWeekdays');
+  wdays.innerHTML = WEEKDAYS.map(d => `<div class="weekday-label">${d}</div>`).join('');
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const today = new Date();
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'cal-day empty';
+    grid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const events = state.events[dateKey] || [];
+    const isToday = today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === d;
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-day' + (isToday ? ' today' : '') + (events.length ? ' has-event' : '');
+    cell.innerHTML = `<div class="day-num">${d}</div>` +
+      events.map(e => `<div class="day-event event-${e.type}">${e.desc}</div>`).join('');
+    grid.appendChild(cell);
+  }
+  updateStats();
+}
+
+function changeMonth(dir) {
+  currentMonth += dir;
+  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+  if (currentMonth > 11) { currentMonth = 0;  currentYear++; }
+  renderCalendar();
+}
+
+function addEvent() {
+  const day  = parseInt(document.getElementById('inp-evDay').value);
+  const type = document.getElementById('inp-evType').value;
+  const desc = document.getElementById('inp-evDesc').value.trim();
+  if (!day || !desc) { alert('Completa el día y la descripción.'); return; }
+  const dateKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  if (!state.events[dateKey]) state.events[dateKey] = [];
+  state.events[dateKey].push({ desc, type });
+  save(); renderCalendar();
+  document.getElementById('inp-evDay').value = '';
+  document.getElementById('inp-evDesc').value = '';
+}
+
+// ===================== SETTINGS =====================
+function saveSettings() {
+  state.guild.name   = document.getElementById('set-name').value.trim() || state.guild.name;
+  state.guild.level  = parseInt(document.getElementById('set-level').value) || state.guild.level;
+  state.guild.server = document.getElementById('set-server').value.trim() || state.guild.server;
+  state.guild.desc   = document.getElementById('set-desc').value.trim() || state.guild.desc;
+  
+  document.getElementById('guildName').innerHTML = state.guild.name.includes('-') 
+    ? `${state.guild.name.split('-')[0]}-<span>${state.guild.name.split('-')[1]}</span>`
+    : state.guild.name;
+    
+  document.getElementById('guildServer').textContent = `Servidor: ${state.guild.server} | Nivel de gremio: ${state.guild.level}`;
+  document.getElementById('guildDesc').textContent = state.guild.desc;
+  save();
+  alert('Cambios guardados correctamente.');
+}
+
+// Close modal on overlay click
+document.getElementById('pjModal').addEventListener('click', function(e) {
+  if (e.target === this) closePJModal();
+});
+
+// ===================== INIT =====================
+(function init() {
+  document.getElementById('guildServer').textContent = `Servidor: ${state.guild.server} | Nivel de gremio: ${state.guild.level}`;
+  document.getElementById('guildDesc').textContent = state.guild.desc;
+  renderMembers();
+  renderCalendar();
+})();
+</script>
+</body>
+</html>
