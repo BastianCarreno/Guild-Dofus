@@ -272,13 +272,13 @@
   </div>
 </div>
 
-<!-- FIREBASE SDK v12 -->
+<!-- FIREBASE SDK v12 (VERSIÓN BLINDADA ANTI-NULL) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
   import { getFirestore, doc, onSnapshot, updateDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-  // Tu configuración oficial de Firebase para Miembros
+  // Tu configuración oficial de Firebase para Los-Perversos
   const firebaseConfig = {
     apiKey: "AIzaSyD-ZARNy4qlxb8b5p26-DcuHQEw3BSn-oE",
     authDomain: "miembros-c2d72.firebaseapp.com",
@@ -338,7 +338,7 @@
       }
     });
 
-    // 4. Monitoreo de Autenticación
+    // 4. Monitoreo de Autenticación (Blindado)
     onAuthStateChanged(auth, (user) => {
       const bGuest = document.getElementById('authBadgeGuest');
       const bAdmin = document.getElementById('authBadgeAdmin');
@@ -346,23 +346,23 @@
 
       if (user) {
         document.body.classList.add('is-admin');
-        if(bGuest) bGuest.classList.add('hidden');
-        if(bAdmin) bAdmin.classList.remove('hidden');
-        if(bAction) bAction.textContent = "Salir";
+        if (bGuest) bGuest.classList.add('hidden');
+        if (bAdmin) bAdmin.classList.remove('hidden');
+        if (bAction) bAction.textContent = "Salir";
       } else {
         document.body.classList.remove('is-admin');
-        if(bAdmin) bAdmin.classList.add('hidden');
-        if(bGuest) bGuest.classList.remove('hidden');
-        if(bAction) bAction.textContent = "Entrar";
+        if (bAdmin) bAdmin.classList.add('hidden');
+        if (bGuest) bGuest.classList.remove('hidden');
+        if (bAction) bAction.textContent = "Entrar";
       }
       renderMembers();
     });
 
-    // 5. Modales (Cerrar al hacer click fuera)
+    // 5. Modales (Cierre por click fuera - Blindados)
     const pModal = document.getElementById('pjModal');
     const aModal = document.getElementById('authModal');
-    if(pModal) pModal.addEventListener('click', function(e) { if (e.target === this) closePJModal(); });
-    if(aModal) aModal.addEventListener('click', function(e) { if (e.target === this) closeAuthModal(); });
+    if (pModal) pModal.addEventListener('click', function(e) { if (e.target === this) closePJModal(); });
+    if (aModal) aModal.addEventListener('click', function(e) { if (e.target === this) closeAuthModal(); });
   });
 
   // --- FUNCIONES EXPUESTAS AL AMBITO GLOBAL ---
@@ -371,26 +371,31 @@
       signOut(auth).then(() => alert('Sesión de administrador cerrada.'));
     } else {
       const am = document.getElementById('authModal');
-      if(am) am.classList.add('open');
+      if (am) am.classList.add('open');
     }
   };
 
   window.closeAuthModal = function() {
     const am = document.getElementById('authModal');
-    if(am) am.classList.remove('open');
+    if (am) am.classList.remove('open');
     const ae = document.getElementById('auth-email');
     const ap = document.getElementById('auth-pass');
-    if(ae) ae.value = '';
-    if(ap) ap.value = '';
+    if (ae) ae.value = '';
+    if (ap) ap.value = '';
   };
 
   window.submitLogin = function() {
-    const email = document.getElementById('auth-email').value.trim();
-    const pass = document.getElementById('auth-pass').value;
+    const emailEl = document.getElementById('auth-email');
+    const passEl = document.getElementById('auth-pass');
     const btn = document.getElementById('btnSubmitAuth');
+    
+    if (!emailEl || !passEl) return;
+    
+    const email = emailEl.value.trim();
+    const pass = passEl.value;
 
     if (!email || !pass) { alert('Completa los campos.'); return; }
-    btn.disabled = true; btn.textContent = "Validando...";
+    if (btn) { btn.disabled = true; btn.textContent = "Validando..."; }
 
     signInWithEmailAndPassword(auth, email, pass)
       .then(() => {
@@ -401,7 +406,7 @@
         console.error(error);
       })
       .finally(() => {
-        btn.disabled = false; btn.textContent = "Ingresar";
+        if (btn) { btn.disabled = false; btn.textContent = "Ingresar"; }
       });
   };
 
@@ -410,8 +415,8 @@
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     
     const targetSec = document.getElementById('sec-' + name);
-    if(targetSec) targetSec.classList.add('active');
-    if(btn) btn.classList.add('active');
+    if (targetSec) targetSec.classList.add('active');
+    if (btn) btn.classList.add('active');
     
     if (name === 'calendar') renderCalendar();
     if (name === 'members') renderMembers();
@@ -420,7 +425,7 @@
   // --- LOGICA DE MIEMBROS & FIRESTORE ---
   window.renderMembers = function() {
     const grid = document.getElementById('membersGrid');
-    if(!grid) return;
+    if (!grid) return;
     grid.innerHTML = '';
     
     window.membersList.forEach(m => {
@@ -429,7 +434,7 @@
       card.id = 'card-' + m.id;
       const roleClass = { leader:'role-leader', officer:'role-officer', member:'role-member' }[m.role] || 'role-member';
       const roleLabel = { leader:'Líder', officer:'Oficial', member:'Miembro' }[m.role] || 'Miembro';
-      const initials = m.username.slice(0,2).toUpperCase();
+      const initials = m.username ? m.username.slice(0,2).toUpperCase() : '??';
       
       const adminButtons = document.body.classList.contains('is-admin') 
         ? `<div style="display:flex;gap:0.5rem;margin-top:1rem" class="admin-only">
@@ -442,8 +447,8 @@
         <div class="member-header" onclick="toggleCard('${m.id}')">
           <div class="member-avatar">${initials}</div>
           <div>
-            <div class="member-name">${m.username}</div>
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.1rem">${m.pjs.length} personaje${m.pjs.length !== 1 ? 's' : ''}</div>
+            <div class="member-name">${m.username || 'Sin Nombre'}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.1rem">${(m.pjs || []).length} personaje${(m.pjs || []).length !== 1 ? 's' : ''}</div>
           </div>
           <span class="member-role ${roleClass}">${roleLabel}</span>
           <span class="expand-icon">&#9660;</span>
@@ -475,7 +480,7 @@
           </div>
         </div>
         <div class="pj-oficios">
-          ${pj.oficios.map(o => `<span class="oficio-tag oficio-${o.type}">${o.name}</span>`).join('') || '<span style="font-size:0.7rem;color:var(--text-muted);font-style:italic">Sin oficios</span>'}
+          ${(pj.oficios || []).map(o => `<span class="oficio-tag oficio-${o.type}">${o.name}</span>`).join('') || '<span style="font-size:0.7rem;color:var(--text-muted);font-style:italic">Sin oficios</span>'}
         </div>
       </div>
     `).join('');
@@ -483,12 +488,16 @@
 
   window.toggleCard = function(id) {
     const card = document.getElementById('card-' + id);
-    if(card) card.classList.toggle('open');
+    if (card) card.classList.toggle('open');
   };
 
   window.addMember = function() {
-    const username = document.getElementById('inp-user').value.trim();
-    const role = document.getElementById('inp-role').value;
+    const userEl = document.getElementById('inp-user');
+    const roleEl = document.getElementById('inp-role');
+    if (!userEl || !roleEl) return;
+
+    const username = userEl.value.trim();
+    const role = roleEl.value;
     if (!username) { alert('Ingresa un nombre de usuario.'); return; }
     
     const newMember = { id: "m_" + Date.now(), username, role, pjs: [] };
@@ -496,14 +505,14 @@
     updateDoc(doc(db, "guild_data", "members"), {
       list: arrayUnion(newMember)
     }).then(() => {
-      document.getElementById('inp-user').value = '';
-    }).catch(err => alert("Error: Verifica las reglas de escritura en tu consola Firebase o inicia sesión como admin."));
+      userEl.value = '';
+    }).catch(err => alert("Error: Verifica las reglas de tu base de datos o inicia sesión como admin."));
   };
 
   window.removeMember = function(id) {
     if (!confirm('¿Eliminar este jugador y todos sus personajes?')) return;
     const target = window.membersList.find(m => m.id === id);
-    if(!target) return;
+    if (!target) return;
 
     updateDoc(doc(db, "guild_data", "members"), {
       list: arrayRemove(target)
@@ -516,7 +525,7 @@
     
     const updatedPjs = m.pjs.filter(p => p.id !== pjId);
     const updatedList = window.membersList.map(member => {
-      if(member.id === memberId) {
+      if (member.id === memberId) {
         return { ...member, pjs: updatedPjs };
       }
       return member;
@@ -529,25 +538,32 @@
   window.openPJModal = function(memberId) {
     window.editingMemberId = memberId;
     window.tempOficios = [];
-    document.getElementById('pj-name').value = '';
-    document.getElementById('pj-level').value = '';
-    document.getElementById('pj-oficios-tags').innerHTML = '';
+    
+    const nameEl = document.getElementById('pj-name');
+    const lvlEl = document.getElementById('pj-level');
+    const tagsEl = document.getElementById('pj-oficios-tags');
+    const titleEl = document.getElementById('pjModalTitle');
+    
+    if (nameEl) nameEl.value = '';
+    if (lvlEl) lvlEl.value = '';
+    if (tagsEl) tagsEl.innerHTML = '';
+    
     const m = window.membersList.find(m => m.id === memberId);
-    document.getElementById('pjModalTitle').textContent = 'Agregar PJ para ' + m.username;
+    if (titleEl && m) titleEl.textContent = 'Agregar PJ para ' + m.username;
     
     const pm = document.getElementById('pjModal');
-    if(pm) pm.classList.add('open');
+    if (pm) pm.classList.add('open');
   };
 
   window.closePJModal = function() {
     const pm = document.getElementById('pjModal');
-    if(pm) pm.classList.remove('open');
+    if (pm) pm.classList.remove('open');
     window.editingMemberId = null;
   };
 
   window.addOficioTag = function() {
     const sel = document.getElementById('pj-oficio-select');
-    if(!sel) return;
+    if (!sel || !sel.value) return;
     const [name, type] = sel.value.split('|');
     if (window.tempOficios.find(o => o.name === name)) return;
     window.tempOficios.push({ name, type });
@@ -556,7 +572,7 @@
 
   window.renderOficioTags = function() {
     const container = document.getElementById('pj-oficios-tags');
-    if(!container) return;
+    if (!container) return;
     container.innerHTML = window.tempOficios.map((o, i) =>
       `<span class="selected-oficio" onclick="removeOficioTag(${i})" title="Clic para quitar">${o.name} ×</span>`
     ).join('');
@@ -568,13 +584,19 @@
   };
 
   window.savePJ = function() {
-    const name = document.getElementById('pj-name').value.trim();
-    const cls  = document.getElementById('pj-class').value;
-    const level = parseInt(document.getElementById('pj-level').value) || 1;
+    const nameEl = document.getElementById('pj-name');
+    const clsEl = document.getElementById('pj-class');
+    const lvlEl = document.getElementById('pj-level');
+    
+    if (!nameEl || !clsEl || !lvlEl) return;
+
+    const name = nameEl.value.trim();
+    const cls  = clsEl.value;
+    const level = parseInt(lvlEl.value) || 1;
     if (!name) { alert('Ingresa el nombre del personaje.'); return; }
     
     const updatedList = window.membersList.map(member => {
-      if(member.id === window.editingMemberId) {
+      if (member.id === window.editingMemberId) {
         const pjs = member.pjs || [];
         const newPj = { id: "pj_" + Date.now(), name, cls, level, oficios: [...window.tempOficios] };
         return { ...member, pjs: [...pjs, newPj] };
@@ -589,14 +611,13 @@
   // --- CALENDAR ---
   window.renderCalendar = function() {
     const label = document.getElementById('calMonthLabel');
-    if(!label) return;
-    label.textContent = window.MONTHS[window.currentMonth] + ' ' + window.currentYear;
+    if (label) label.textContent = window.MONTHS[window.currentMonth] + ' ' + window.currentYear;
 
     const wdays = document.getElementById('calWeekdays');
-    if(wdays) wdays.innerHTML = window.WEEKDAYS.map(d => `<div class="weekday-label">${d}</div>`).join('');
+    if (wdays) wdays.innerHTML = window.WEEKDAYS.map(d => `<div class="weekday-label">${d}</div>`).join('');
 
     const grid = document.getElementById('calGrid');
-    if(!grid) return;
+    if (!grid) return;
     grid.innerHTML = '';
 
     const firstDay = new Date(window.currentYear, window.currentMonth, 1).getDay();
@@ -631,9 +652,15 @@
   };
 
   window.addEvent = function() {
-    const day  = parseInt(document.getElementById('inp-evDay').value);
-    const type = document.getElementById('inp-evType').value;
-    const desc = document.getElementById('inp-evDesc').value.trim();
+    const dayEl = document.getElementById('inp-evDay');
+    const typeEl = document.getElementById('inp-evType');
+    const descEl = document.getElementById('inp-evDesc');
+    
+    if (!dayEl || !typeEl || !descEl) return;
+
+    const day  = parseInt(dayEl.value);
+    const type = typeEl.value;
+    const desc = descEl.value.trim();
     if (!day || !desc) { alert('Completa el día y la descripción.'); return; }
     
     const dateKey = `${window.currentYear}-${String(window.currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
@@ -644,17 +671,22 @@
 
     updateDoc(doc(db, "guild_data", "events"), { schedule: currentSchedule })
       .then(() => {
-        document.getElementById('inp-evDay').value = '';
-        document.getElementById('inp-evDesc').value = '';
+        dayEl.value = '';
+        descEl.value = '';
       });
   };
 
   // --- SETTINGS ---
   window.saveSettings = function() {
-    const name = document.getElementById('set-name').value.trim() || window.guildData.name;
-    const level = parseInt(document.getElementById('set-level').value) || window.guildData.level;
-    const server = document.getElementById('set-server').value.trim() || window.guildData.server;
-    const desc = document.getElementById('set-desc').value.trim() || window.guildData.desc;
+    const nameEl = document.getElementById('set-name');
+    const lvlEl = document.getElementById('set-level');
+    const srvEl = document.getElementById('set-server');
+    const descEl = document.getElementById('set-desc');
+
+    const name = nameEl ? nameEl.value.trim() : window.guildData.name;
+    const level = lvlEl ? (parseInt(lvlEl.value) || window.guildData.level) : window.guildData.level;
+    const server = srvEl ? srvEl.value.trim() : window.guildData.server;
+    const desc = descEl ? descEl.value.trim() : window.guildData.desc;
 
     updateDoc(doc(db, "guild_config", "los-perversos"), { name, level, server, desc })
       .then(() => alert('Configuración global guardada en Firestore.'));
@@ -662,38 +694,44 @@
 
   function renderGuildHeader() {
     const titleContainer = document.getElementById('guildName');
-    if(!titleContainer) return;
-    if (window.guildData.name.includes('-')) {
-      titleContainer.innerHTML = `${window.guildData.name.split('-')[0]}-<span>${window.guildData.name.split('-')[1]}</span>`;
-    } else {
-      titleContainer.textContent = window.guildData.name;
+    if (titleContainer && window.guildData.name) {
+      if (window.guildData.name.includes('-')) {
+        titleContainer.innerHTML = `${window.guildData.name.split('-')[0]}-<span>${window.guildData.name.split('-')[1]}</span>`;
+      } else {
+        titleContainer.textContent = window.guildData.name;
+      }
     }
     const gs = document.getElementById('guildServer');
     const gd = document.getElementById('guildDesc');
-    if(gs) gs.textContent = `Servidor: ${window.guildData.server} | Nivel de gremio: ${window.guildData.level}`;
-    if(gd) gd.textContent = window.guildData.desc;
+    if (gs) gs.textContent = `Servidor: ${window.guildData.server || '--'} | Nivel de gremio: ${window.guildData.level || '--'}`;
+    if (gd) gd.textContent = window.guildData.desc || '';
   }
 
   function fillGuildSettingsForm() {
     const el = document.getElementById('set-name');
-    if(!el) return;
-    el.value = window.guildData.name;
-    document.getElementById('set-level').value = window.guildData.level;
-    document.getElementById('set-server').value = window.guildData.server;
-    document.getElementById('set-desc').value = window.guildData.desc;
+    const lvlEl = document.getElementById('set-level');
+    const srvEl = document.getElementById('set-server');
+    const descEl = document.getElementById('set-desc');
+
+    if (el) el.value = window.guildData.name || '';
+    if (lvlEl) lvlEl.value = window.guildData.level || 1;
+    if (srvEl) srvEl.value = window.guildData.server || '';
+    if (descEl) descEl.value = window.guildData.desc || '';
   }
 
   function updateStatsOnly() {
     const su = document.getElementById('statUsers');
     const sp = document.getElementById('statPJs');
     const se = document.getElementById('statEvents');
-    if(!su || !sp || !se) return;
     
-    su.textContent = window.membersList.length;
-    sp.textContent = window.membersList.reduce((a,m) => a + (m.pjs ? m.pjs.length : 0), 0);
-    const monthKey = `${window.currentYear}-${String(window.currentMonth+1).padStart(2,'0')}`;
-    const evCount = Object.keys(window.eventsData).filter(k => k.startsWith(monthKey)).reduce((a, k) => a + window.eventsData[k].length, 0);
-    se.textContent = evCount;
+    if (su) su.textContent = window.membersList.length;
+    if (sp) sp.textContent = window.membersList.reduce((a,m) => a + (m.pjs ? m.pjs.length : 0), 0);
+    
+    if (se) {
+      const monthKey = `${window.currentYear}-${String(window.currentMonth+1).padStart(2,'0')}`;
+      const evCount = Object.keys(window.eventsData).filter(k => k.startsWith(monthKey)).reduce((a, k) => a + window.eventsData[k].length, 0);
+      se.textContent = evCount;
+    }
   }
 </script>
 </body>
