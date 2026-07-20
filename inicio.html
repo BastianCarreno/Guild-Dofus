@@ -329,11 +329,13 @@
     </div>
   </div>
 
-  <!-- LÓGICA CORE DE FIREBASE COMPATIBLE Y BLINDADA -->
+<!-- LÓGICA CORE DE FIREBASE CON DEBUGGING AVANZADO -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
     import { getFirestore, doc, onSnapshot, updateDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    console.log("[DEBUG] Iniciando script de Firebase...");
 
     // Tu configuración oficial de Firebase para Los-Perversos
     const firebaseConfig = {
@@ -350,6 +352,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    console.log("[DEBUG] Firebase SDK Inicializado correctamente.");
 
     // --- ESTADO EN MEMORIA DE LA APP ---
     window.MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -366,53 +369,76 @@
 
     // --- CONTROL DE ARRANQUE SEGURO (ESPERAR AL DOM) ---
     document.addEventListener("DOMContentLoaded", () => {
+      console.log("[DEBUG] DOM Completamente cargado. Activando listeners onSnapshot...");
       
       // 1. Escuchar metadatos del gremio
       onSnapshot(doc(db, "guild_config", "los-perversos"), (docSnap) => {
+        console.log("[DEBUG Snap] Datos de guild_config recibidos.");
         if (docSnap.exists()) {
+          console.log("[DEBUG Snap] Documento los-perversos existe:", docSnap.data());
           window.guildData = docSnap.data();
         } else {
-          setDoc(doc(db, "guild_config", "los-perversos"), window.guildData);
+          console.warn("[DEBUG Snap] El documento los-perversos NO existe. Intentando crear plantilla inicial...");
+          setDoc(doc(db, "guild_config", "los-perversos"), window.guildData)
+            .then(() => console.log("[DEBUG Init] Documento base de guild_config creado con éxito."))
+            .catch(err => console.error("[DEBUG Init Error] Falló inicializar documento base:", err));
         }
         renderGuildHeader();
         fillGuildSettingsForm();
+      }, (error) => {
+        console.error("[DEBUG Snap Error] Error escuchando guild_config:", error);
       });
 
       // 2. Escuchar lista de miembros
       onSnapshot(doc(db, "guild_data", "members"), (docSnap) => {
-        window.membersList = docSnap.exists() ? (docSnap.data().list || []) : [];
-        renderMembers();
+        console.log("[DEBUG Snap] Datos de miembros recibidos.");
+        if (docSnap.exists()) {
+          window.membersList = docSnap.data().list || [];
+        } else {
+          console.warn("[DEBUG Snap] No existe el documento guild_data/members. Intentando inicializar...");
+          setDoc(doc(db, "guild_data", "members"), { list: [] })
+            .catch(err => console.error("[DEBUG Init Error] No se pudo inicializar guild_data/members:", err));
+        }
+        window.renderMembers();
+      }, (error) => {
+        console.error("[DEBUG Snap Error] Error escuchando miembros:", error);
       });
 
       // 3. Escuchar eventos / Almanax
       onSnapshot(doc(db, "guild_data", "events"), (docSnap) => {
+        console.log("[DEBUG Snap] Datos de eventos recibidos.");
         window.eventsData = docSnap.exists() ? (docSnap.data().schedule || {}) : {};
         const calSec = document.getElementById('sec-calendar');
         if (calSec && calSec.classList.contains('active')) {
-          renderCalendar();
+          window.renderCalendar();
         } else {
           updateStatsOnly();
         }
+      }, (error) => {
+        console.error("[DEBUG Snap Error] Error escuchando eventos:", error);
       });
 
       // 4. Monitoreo de Autenticación
       onAuthStateChanged(auth, (user) => {
+        console.log("[DEBUG Auth] Cambió el estado de autenticación.");
         const bGuest = document.getElementById('authBadgeGuest');
         const bAdmin = document.getElementById('authBadgeAdmin');
         const bAction = document.getElementById('btnAuthAction');
 
         if (user) {
+          console.log("[DEBUG Auth] Usuario Administrador LOGUEADO:", user.email);
           document.body.classList.add('is-admin');
           if (bGuest) bGuest.classList.add('hidden');
           if (bAdmin) bAdmin.classList.remove('hidden');
           if (bAction) bAction.textContent = "Salir";
         } else {
+          console.log("[DEBUG Auth] Sesión actual: INVITADO (Modo lectura)");
           document.body.classList.remove('is-admin');
           if (bAdmin) bAdmin.classList.add('hidden');
           if (bGuest) bGuest.classList.remove('hidden');
           if (bAction) bAction.textContent = "Entrar";
         }
-        renderMembers();
+        window.renderMembers();
       });
 
       // 5. Modales (Cierre por click fuera)
@@ -454,13 +480,15 @@
       if (!email || !pass) { alert('Completa los campos.'); return; }
       if (btn) { btn.disabled = true; btn.textContent = "Validando..."; }
 
+      console.log("[DEBUG Auth] Intentando signIn con:", email);
       signInWithEmailAndPassword(auth, email, pass)
-        .then(() => {
+        .then((cred) => {
+          console.log("[DEBUG Auth] Login exitoso para UID:", cred.user.uid);
           window.closeAuthModal();
         })
         .catch((error) => {
-          alert('Credenciales incorrectas de administrador.');
-          console.error(error);
+          console.error("[DEBUG Auth Error] Falló el inicio de sesión:", error);
+          alert('Credenciales incorrectas de administrador. Error: ' + error.code);
         })
         .finally(() => {
           if (btn) { btn.disabled = false; btn.textContent = "Ingresar"; }
@@ -565,11 +593,16 @@
       
       const newMember = { id: "m_" + Date.now(), username, role, pjs: [] };
       
+      console.log("[DEBUG Action] Intentando añadir jugador a Firestore:", newMember);
       updateDoc(doc(db, "guild_data", "members"), {
         list: arrayUnion(newMember)
       }).then(() => {
+        console.log("[DEBUG Action] Jugador añadido exitosamente.");
         userEl.value = '';
-      }).catch(err => alert("Error: Revisa permisos en Firestore o inicia sesión."));
+      }).catch(err => {
+        console.error("[DEBUG Action Error] Error al añadir miembro:", err);
+        alert("No se pudo guardar el miembro. Revisa la consola (F12). ¿Estás logueado como admin?");
+      });
     };
 
     window.removeMember = function(id) {
@@ -577,9 +610,11 @@
       const target = window.membersList.find(m => m.id === id);
       if (!target) return;
 
+      console.log("[DEBUG Action] Intentando eliminar jugador:", id);
       updateDoc(doc(db, "guild_data", "members"), {
         list: arrayRemove(target)
-      });
+      }).then(() => console.log("[DEBUG Action] Jugador eliminado con éxito."))
+        .catch(err => console.error("[DEBUG Action Error] Error al eliminar jugador:", err));
     };
 
     window.removePJ = function(memberId, pjId) {
@@ -594,7 +629,10 @@
         return member;
       });
 
-      updateDoc(doc(db, "guild_data", "members"), { list: updatedList });
+      console.log("[DEBUG Action] Intentando eliminar personaje:", pjId, "del jugador:", memberId);
+      updateDoc(doc(db, "guild_data", "members"), { list: updatedList })
+        .then(() => console.log("[DEBUG Action] Personaje removido con éxito."))
+        .catch(err => console.error("[DEBUG Action Error] Error al remover personaje:", err));
     };
 
     // --- MODAL PJ ---
@@ -667,8 +705,16 @@
         return member;
       });
 
+      console.log("[DEBUG Action] Intentando guardar nuevo personaje en la lista modificada...");
       updateDoc(doc(db, "guild_data", "members"), { list: updatedList })
-        .then(() => window.closePJModal());
+        .then(() => {
+          console.log("[DEBUG Action] Personaje guardado con éxito.");
+          window.closePJModal();
+        })
+        .catch(err => {
+          console.error("[DEBUG Action Error] Falló guardar personaje:", err);
+          alert("Error al guardar personaje. Revisa permisos.");
+        });
     };
 
     // --- CALENDAR ---
@@ -732,15 +778,30 @@
       if (!currentSchedule[dateKey]) currentSchedule[dateKey] = [];
       currentSchedule[dateKey].push({ desc, type });
 
+      console.log("[DEBUG Action] Intentando guardar evento para la fecha:", dateKey);
       updateDoc(doc(db, "guild_data", "events"), { schedule: currentSchedule })
         .then(() => {
+          console.log("[DEBUG Action] Evento agregado correctamente.");
           dayEl.value = '';
           descEl.value = '';
+        })
+        .catch(err => {
+          console.error("[DEBUG Action Error] Error al añadir evento:", err);
+          alert("Error al añadir evento en Firebase.");
         });
     };
 
-    // --- SETTINGS ---
+    // --- SETTINGS (CON FILTROS DE VERIFICACIÓN) ---
     window.saveSettings = function() {
+      console.log("[DEBUG Action] Iniciando proceso de window.saveSettings()...");
+      
+      // Verificación previa de login en JS
+      if (!auth.currentUser) {
+        console.error("[DEBUG Action Error] Bloqueado en Frontend: auth.currentUser es NULL.");
+        alert("¡Error en Front-end!\nNo has iniciado sesión como administrador legítimo en este navegador. Haz clic en 'Entrar' arriba a la derecha.");
+        return;
+      }
+
       const nameEl = document.getElementById('set-name');
       const lvlEl = document.getElementById('set-level');
       const srvEl = document.getElementById('set-server');
@@ -751,8 +812,18 @@
       const server = srvEl ? srvEl.value.trim() : window.guildData.server;
       const desc = descEl ? descEl.value.trim() : window.guildData.desc;
 
-      updateDoc(doc(db, "guild_config", "los-perversos"), { name, level, server, desc })
-        .then(() => alert('Configuración global guardada en Firestore.'));
+      const payload = { name, level, server, desc };
+      console.log("[DEBUG Action] Payload a enviar a 'guild_config/los-perversos':", payload);
+
+      updateDoc(doc(db, "guild_config", "los-perversos"), payload)
+        .then(() => {
+          console.log("[DEBUG Action] Firestore respondió: ¡GUARDADO CORRECTAMENTE!");
+          alert('¡Éxito! Configuración global guardada en la base de datos de Firestore.');
+        })
+        .catch(err => {
+          console.error("[DEBUG Action Error] Firestore rechazó la escritura:", err);
+          alert("¡Firebase rechazó los datos!\nCódigo de error: " + err.code + "\nMensaje: " + err.message + "\n\nRevisa si publicaste correctamente las Rules en tu consola Firebase.");
+        });
     };
 
     function renderGuildHeader() {
