@@ -1,250 +1,96 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control - Guild Config</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1e1e24;
-            color: #f5f5f5;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background-color: #2a2a35;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
-        }
-        h2 {
-            margin-top: 0;
-            color: #4dadf7;
-            border-bottom: 2px solid #3b3b4f;
-            padding-bottom: 10px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #ced4da;
-        }
-        input[type="text"], input[type="number"], textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #495057;
-            background-color: #1e1e24;
-            color: #fff;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        textarea {
-            resize: vertical;
-            height: 80px;
-        }
-        button {
-            background-color: #339af0;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            width: 100%;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background-color: #228be6;
-        }
-        .member-card {
-            background-color: #1e1e24;
-            padding: 10px;
-            border-left: 4px solid #51cf66;
-            margin-bottom: 8px;
-            border-radius: 0 4px 4px 0;
-        }
-        .loading {
-            text-align: center;
-            color: #aaa;
-            font-style: italic;
-        }
-    </style>
-</head>
-<body>
+<script type="module">
+    // 1. Importar los módulos oficiales necesarios (getDoc en lugar de onSnapshot)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firestore.js";
 
-    <!-- BLOQUE 1: CONFIGURACIÓN DE LA GUILD -->
-    <div class="container">
-        <h2>Configuración de la Guild (los-perversos)</h2>
-        <div id="settings-form">
-            <div class="form-group">
-                <label for="guild-name">Nombre de la Guild:</label>
-                <input type="text" id="guild-name" placeholder="Ej: Los Perversos">
-            </div>
-            <div class="form-group">
-                <label for="guild-level">Nivel:</label>
-                <input type="number" id="guild-level" placeholder="Ej: 123">
-            </div>
-            <div class="form-group">
-                <label for="guild-server">Servidor:</label>
-                <input type="text" id="guild-server" placeholder="Ej: Server 1">
-            </div>
-            <div class="form-group">
-                <label for="guild-desc">Descripción:</label>
-                <textarea id="guild-desc" placeholder="Escribe una breve descripción..."></textarea>
-            </div>
-            <button onclick="window.saveSettings()">Guardar Configuración</button>
-        </div>
-    </div>
+    // Tu configuración actual de Firebase (Mantenla tal y como la tienes)
+    const firebaseConfig = {
+        apiKey: "TU_API_KEY",
+        authDomain: "TU_AUTH_DOMAIN",
+        projectId: "TU_PROJECT_ID",
+        storageBucket: "TU_STORAGE_BUCKET",
+        messagingSenderId: "TU_MESSAGING_SENDER_ID",
+        appId: "TU_APP_ID"
+    };
 
-    <!-- BLOQUE 2: MIEMBROS DE LA GUILD -->
-    <div class="container">
-        <h2>Miembros del Clan</h2>
-        <div id="members-container">
-            <p class="loading">Cargando lista de miembros...</p>
-        </div>
-    </div>
+    // Inicializar base de datos
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    <!-- LOGICA DE FIREBASE CONFIGURADA -->
-    <script type="module">
-        // Importaciones de los módulos oficiales de Firebase v10
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firestore.js";
+    // Referencias a los documentos de tus logs
+    const configDocRef = doc(db, 'guild_config', 'los-perversos');
+    const membersDocRef = doc(db, 'guild_data', 'members');
 
-        // ==========================================
-        //  REEMPLAZA ESTO CON LOS DATOS DE TU APP
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_AUTH_DOMAIN",
-            projectId: "TU_PROJECT_ID",
-            storageBucket: "TU_STORAGE_BUCKET",
-            messagingSenderId: "TU_MESSAGING_SENDER_ID",
-            appId: "TU_APP_ID"
-        };
-
-        // Inicializamos Firebase y Firestore
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Referencias exactas extraídas de tus logs
-        const configDocRef = doc(db, 'guild_config', 'los-perversos');
-        const membersDocRef = doc(db, 'guild_data', 'members');
-
-        /**
-         * FUNCIÓN DE CARGA INICIAL CONTROLADA (Evita el bucle infinito)
-         * Se ejecuta una única vez usando async/await y getDoc.
-         */
-        async function inicializarAplicacion() {
-            try {
-                // --- 1. PROCESAR GUILD CONFIG ---
-                console.log("[DEBUG] Solicitando documento guild_config/los-perversos...");
-                const configSnap = await getDoc(configDocRef);
-
-                if (!configSnap.exists()) {
-                    console.log("inicio.html:381 [DEBUG Snap] El documento los-perversos NO existe. Intentando crear plantilla inicial...");
-                    // Valores iniciales por defecto si está vacío
-                    const plantillaConfig = { name: 'asd', level: 123, server: 'asd', desc: '' };
-                    await setDoc(configDocRef, plantillaConfig);
-                    renderConfig(plantillaConfig);
-                } else {
-                    console.log("inicio.html:376 [DEBUG Snap] Datos de guild_config recibidos.");
-                    renderConfig(configSnap.data());
-                }
-
-                // --- 2. PROCESAR MEMBERS ---
-                console.log("[DEBUG] Solicitando documento guild_data/members...");
-                const membersSnap = await getDoc(membersDocRef);
-
-                if (!membersSnap.exists()) {
-                    console.log("inicio.html:398 [DEBUG Snap] No existe el documento guild_data/members. Intentando inicializar...");
-                    // Inicialización por defecto de la lista de miembros
-                    const plantillaMiembros = { 
-                        lista: [{ nombre: "Líder Fundador", rango: "Líder" }], 
-                        total: 1 
-                    };
-                    await setDoc(membersDocRef, plantillaMiembros);
-                    renderMembers(plantillaMiembros);
-                } else {
-                    console.log("inicio.html:394 [DEBUG Snap] Datos de miembros recibidos.");
-                    renderMembers(membersSnap.data());
-                }
-
-            } catch (error) {
-                console.error("[ERROR] Error crítico durante la carga de Firestore:", error);
-            }
-        }
-
-        /**
-         * Pinta los datos de la configuración en el formulario
-         */
-        function renderConfig(data) {
-            document.getElementById('guild-name').value = data.name || '';
-            document.getElementById('guild-level').value = data.level || 0;
-            document.getElementById('guild-server').value = data.server || '';
-            document.getElementById('guild-desc').value = data.desc || '';
-        }
-
-        /**
-         * Pinta los miembros en el contenedor correspondiente
-         */
-        function renderMembers(data) {
-            const container = document.getElementById('members-container');
-            container.innerHTML = ""; // Limpiar texto de carga
-
-            if (!data.lista || data.lista.length === 0) {
-                container.innerHTML = "<p>No hay miembros registrados todavía.</p>";
-                return;
-            }
-
-            data.lista.forEach(miembro => {
-                const card = document.createElement('div');
-                card.className = 'member-card';
-                card.innerHTML = `<strong>${miembro.nombre}</strong> - Rango: ${miembro.rango || 'Miembro'}`;
-                container.appendChild(card);
-            });
-        }
-
-        /**
-         * FUNCIÓN PARA GUARDAR (window.saveSettings)
-         * Sube los datos del formulario de manera limpia y asíncrona.
-         */
-        window.saveSettings = async function() {
-            console.log("[DEBUG Action] Iniciando proceso de window.saveSettings()...");
+    /**
+     * REEMPLAZO DE LOS ANTERIORES 'onSnapshot' (Líneas 375 y 394 aprox.)
+     * Usamos una función async con getDoc para que se ejecute UNA SOLA VEZ al cargar la página.
+     */
+    async function inicializarDatos() {
+        try {
+            // --- CARGA DE GUILD CONFIG ---
+            const configSnap = await getDoc(configDocRef);
             
-            const payload = {
-                name: document.getElementById('guild-name').value,
-                level: parseInt(document.getElementById('guild-level').value, 10) || 0,
-                server: document.getElementById('guild-server').value,
-                desc: document.getElementById('guild-desc').value
-            };
-
-            console.log("inicio.html:816 [DEBUG Action] Payload a enviar a 'guild_config/los-perversos':", payload);
-
-            try {
-                // El parámetro { merge: true } asegura que no se destruyan otros campos si existen
-                await setDoc(configDocRef, payload, { merge: true });
-                console.log("[DEBUG] Ajustes guardados con éxito en Firestore.");
-                alert("¡Configuración guardada exitosamente!");
-            } catch (error) {
-                console.error("[ERROR] No se pudo guardar la configuración:", error);
-                alert("Hubo un error al intentar guardar los datos.");
+            if (!configSnap.exists()) {
+                console.log("inicio.html:381 [DEBUG Snap] El documento los-perversos NO existe. Intentando crear plantilla inicial...");
+                const plantillaInicial = { name: 'asd', level: 123, server: 'asd', desc: '' };
+                await setDoc(configDocRef, plantillaInicial);
+                
+                // Llama aquí a tu función original que pintaba los datos en la interfaz antigua
+                // Ejemplo: tuFuncionParaPintarConfig(plantillaInicial);
+            } else {
+                console.log("inicio.html:376 [DEBUG Snap] Datos de guild_config recibidos.");
+                // Llama aquí a tu función original pasándole los datos existentes
+                // Ejemplo: tuFuncionParaPintarConfig(configSnap.data());
             }
+
+            // --- CARGA DE MIEMBROS ---
+            const membersSnap = await getDoc(membersDocRef);
+
+            if (!membersSnap.exists()) {
+                console.log("inicio.html:398 [DEBUG Snap] No existe el documento guild_data/members. Intentando inicializar...");
+                const plantillaMiembros = { lista: [], total: 0 };
+                await setDoc(membersDocRef, plantillaMiembros);
+                
+                // Llama aquí a tu función original que pintaba los miembros
+                // Ejemplo: tuFuncionParaPintarMiembros(plantillaMiembros);
+            } else {
+                console.log("inicio.html:394 [DEBUG Snap] Datos de miembros recibidos.");
+                // Llama aquí a tu función original pasándole los miembros existentes
+                // Ejemplo: tuFuncionParaPintarMiembros(membersSnap.data());
+            }
+
+        } catch (error) {
+            console.error("[ERROR] Error al inicializar datos:", error);
+        }
+    }
+
+    /**
+     * TU FUNCIÓN DE GUARDADO (Línea 816 aprox.)
+     * Modificada para guardar limpiamente sin disparar eventos de escucha asíncronos.
+     */
+    window.saveSettings = async function() {
+        console.log("[DEBUG Action] Iniciando proceso de window.saveSettings()...");
+        
+        // Aquí recolectas los datos de tus inputs antiguos tal y como lo hacias
+        const payload = {
+            name: document.getElementById('guild-name').value, // Asegúrate de que use el ID de tu input antiguo
+            level: parseInt(document.getElementById('guild-level').value, 10) || 0,
+            server: document.getElementById('guild-server').value,
+            desc: document.getElementById('guild-desc').value
         };
 
-        // Ejecutar el cargador apenas el script termine de prepararse
-        inicializarAplicacion();
+        console.log("inicio.html:816 [DEBUG Action] Payload a enviar a 'guild_config/los-perversos':", payload);
 
-    </script>
-</body>
-</html>
+        try {
+            // Guardamos con merge: true para proteger otros campos del documento antiguo
+            await setDoc(configDocRef, payload, { merge: true });
+            console.log("[DEBUG] Guardado completado con éxito.");
+        } catch (error) {
+            console.error("[ERROR] Error al guardar ajustes:", error);
+        }
+    };
+
+    // Ejecutar la carga inicial controlada al abrir o refrescar la página
+    inicializarDatos();
+
+</script>
