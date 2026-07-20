@@ -1,1087 +1,801 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Guild - Dofus Touch</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gremio Los Perversos - Gestión Interna</title>
   <style>
     :root {
-      --gold: #e8b84b;
-      --gold-light: #f5d27a;
-      --gold-dark: #a07818;
-      --ink: #0d0b08;
-      --parchment: #1a1510;
-      --parchment-mid: #231d14;
-      --parchment-light: #2e2518;
-      --red-accent: #c0392b;
-      --blue-accent: #2471a3;
-      --green-accent: #1e8449;
-      --border-color: #3d3020;
+      --bg-main: #121214;
+      --bg-card: #1a1a1e;
+      --bg-input: #26262b;
+      --primary: #af81fd;
+      --primary-hover: #9661f1;
+      --accent: #ffb834;
+      --text: #e1e1e6;
+      --text-muted: #a8a8b3;
+      --border: #29292e;
+      --danger: #fe4a49;
+      --success: #3ef7a7;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-main); color: var(--text); padding-bottom: 3rem; }
+    
+    /* Header & Banner */
+    .header-banner { background: linear-gradient(135deg, #1f1135 0%, #0d0d11 100%); border-bottom: 2px solid var(--border); padding: 2rem 1rem; text-align: center; position: relative; }
+    .header-banner h1 { font-size: 2.5rem; color: #fff; margin-bottom: 0.5rem; letter-spacing: 1px; }
+    .header-banner h1 span { color: var(--accent); }
+    .header-banner p { color: var(--text-muted); font-size: 0.95rem; max-width: 600px; margin: 0.5rem auto 0; line-height: 1.4; }
+    
+    /* Auth Badges */
+    .auth-container { position: absolute; top: 1rem; right: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .badge { padding: 0.25rem 0.6rem; font-size: 0.75rem; font-weight: bold; border-radius: 4px; text-transform: uppercase; }
+    .badge-guest { background-color: #38383e; color: var(--text-muted); }
+    .badge-admin { background-color: rgba(255, 184, 52, 0.15); color: var(--accent); border: 1px solid var(--accent); }
+    .hidden { display: none !important; }
 
-    body {
-      background-color: var(--ink);
-      color: #d4c4a0;
-      font-family: 'Crimson Pro', Georgia, serif;
-      font-size: 17px;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
+    /* Layout & Container */
+    .container { max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; }
+    
+    /* Stats Row */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-box { background: var(--bg-card); border: 1px solid var(--border); padding: 1rem; border-radius: 6px; text-align: center; }
+    .stat-box .num { font-size: 1.8rem; font-weight: bold; color: var(--primary); margin-bottom: 0.2rem; }
+    .stat-box .label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* --- SCROLLBAR --- */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: var(--ink); }
-    ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
+    /* Navigation Tabs */
+    .nav-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; overflow-x: auto; }
+    .nav-tab { background: none; border: none; color: var(--text-muted); padding: 0.75rem 1.2rem; font-size: 0.95rem; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
 
-    /* --- BACKGROUND TEXTURE --- */
-    body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0;
-      background-image:
-        radial-gradient(ellipse at 20% 10%, rgba(232,184,75,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 90%, rgba(192,57,43,0.04) 0%, transparent 50%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-      pointer-events: none;
-    }
-
-    #app { position: relative; z-index: 1; }
-
-    /* --- ORNAMENTAL DIVIDER --- */
-    .divider {
-      display: flex; align-items: center; gap: 1rem;
-      margin: 2.5rem 0;
-    }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--gold-dark), transparent);
-    }
-    .divider-icon {
-      color: var(--gold);
-      font-size: 1.2rem;
-      opacity: 0.7;
-    }
-
-    /* --- HEADER / HERO --- */
-    .hero {
-      position: relative;
-      padding: 4rem 1.5rem 3rem;
-      text-align: center;
-      border-bottom: 1px solid var(--border-color);
-      background: linear-gradient(180deg, rgba(232,184,75,0.06) 0%, transparent 100%);
-      overflow: hidden;
-    }
-    .hero::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(232,184,75,0.08) 0%, transparent 60%);
-    }
-
-    .hero-emblem {
-      width: 110px; height: 110px;
-      border-radius: 50%;
-      border: 3px solid var(--gold-dark);
-      box-shadow: 0 0 30px rgba(232,184,75,0.15), inset 0 0 20px rgba(0,0,0,0.5);
-      margin: 0 auto 1.5rem;
-      background: var(--parchment-mid);
-      display: flex; align-items: center; justify-content: center;
-      position: relative; z-index: 1;
-      animation: floatEmblem 4s ease-in-out infinite;
-    }
-    @keyframes floatEmblem {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-    }
-    .hero-emblem svg { width: 64px; height: 64px; }
-
-    .guild-name {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: clamp(2rem, 6vw, 3.5rem);
-      font-weight: 900;
-      color: var(--gold);
-      text-shadow: 0 0 40px rgba(232,184,75,0.25), 0 2px 4px rgba(0,0,0,0.8);
-      letter-spacing: 0.02em;
-      position: relative; z-index: 1;
-      animation: fadeDown 0.8s ease both;
-    }
-    .guild-subtitle {
-      font-family: 'Cinzel', serif;
-      font-size: 0.85rem;
-      color: var(--gold-dark);
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      margin-top: 0.4rem;
-      position: relative; z-index: 1;
-      animation: fadeDown 0.9s ease both;
-    }
-    .guild-description {
-      max-width: 560px;
-      margin: 1.5rem auto 0;
-      color: #b0a080;
-      font-style: italic;
-      font-size: 1.05rem;
-      position: relative; z-index: 1;
-      animation: fadeDown 1s ease both;
-    }
-
-    .hero-stats {
-      display: flex; justify-content: center; gap: 2.5rem;
-      margin-top: 2rem;
-      position: relative; z-index: 1;
-      animation: fadeDown 1.1s ease both;
-    }
-    .hero-stat {
-      text-align: center;
-    }
-    .hero-stat-value {
-      font-family: 'Cinzel', serif;
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--gold);
-    }
-    .hero-stat-label {
-      font-size: 0.78rem;
-      color: #7a6a4a;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* --- NAV TABS --- */
-    .nav-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 0;
-      border-bottom: 1px solid var(--border-color);
-      background: var(--parchment);
-      position: sticky; top: 0; z-index: 100;
-    }
-    .nav-tab {
-      font-family: 'Cinzel', serif;
-      font-size: 0.8rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      padding: 1rem 2rem;
-      color: #7a6a4a;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.25s;
-      background: transparent; border-top: none; border-left: none; border-right: none;
-    }
-    .nav-tab:hover { color: var(--gold-light); }
-    .nav-tab.active {
-      color: var(--gold);
-      border-bottom-color: var(--gold);
-      background: rgba(232,184,75,0.04);
-    }
-
-    /* --- SECTIONS --- */
-    .section {
-      display: none;
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
-      animation: sectionFade 0.4s ease both;
-    }
+    /* Sections */
+    .section { display: none; }
     .section.active { display: block; }
-    @keyframes sectionFade {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
 
-    .section-title {
-      font-family: 'Cinzel', serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 0.1em;
-      margin-bottom: 1.5rem;
-      display: flex; align-items: center; gap: 0.75rem;
-    }
-    .section-title::after {
-      content: '';
-      flex: 1; height: 1px;
-      background: linear-gradient(to right, var(--gold-dark), transparent);
-    }
+    /* Buttons & Forms */
+    .btn { background: var(--bg-input); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 600; border-radius: 4px; cursor: pointer; transition: background 0.2s, border 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .btn:hover { background: #323238; }
+    .btn-primary { background: var(--primary); border-color: var(--primary); color: #000; }
+    .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+    .btn-danger { background: rgba(254, 74, 73, 0.1); border-color: rgba(254, 74, 73, 0.4); color: var(--danger); font-size: 0.75rem; padding: 0.25rem 0.5rem; }
+    .btn-danger:hover { background: var(--danger); color: #fff; }
+    .btn-outline { border-color: var(--primary); color: var(--primary); background: transparent; }
+    .btn-outline:hover { background: rgba(175, 129, 253, 0.1); }
 
-    /* --- MEMBER CARDS --- */
-    .members-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.25rem;
-    }
+    .form-inline { display: flex; gap: 0.5rem; flex-wrap: wrap; background: var(--bg-card); padding: 1rem; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 1.5rem; align-items: center; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
+    .form-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+    .form-input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text); padding: 0.55rem 0.75rem; border-radius: 4px; font-size: 0.9rem; outline: none; width: 100%; }
+    .form-input:focus { border-color: var(--primary); }
+    select.form-input { cursor: pointer; }
 
-    .member-card {
-      background: var(--parchment-mid);
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      overflow: hidden;
-      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-    }
-    .member-card:hover {
-      border-color: var(--gold-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,184,75,0.08);
-    }
-
-    .member-header {
-      display: flex; align-items: center; gap: 0.75rem;
-      padding: 0.9rem 1rem;
-      cursor: pointer;
-      background: var(--parchment-light);
-      border-bottom: 1px solid var(--border-color);
-      user-select: none;
-    }
-    .member-avatar {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: var(--parchment);
-      border: 2px solid var(--border-color);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Cinzel', serif;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--gold);
-      flex-shrink: 0;
-    }
-    .member-name {
-      font-family: 'Cinzel', serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--gold-light);
-      flex: 1;
-    }
-    .member-role {
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 0.18rem 0.6rem;
-      border-radius: 2px;
-      font-family: 'Cinzel', serif;
-    }
-    .role-leader { background: rgba(192,57,43,0.2); color: #e74c3c; border: 1px solid rgba(192,57,43,0.4); }
-    .role-officer { background: rgba(232,184,75,0.15); color: var(--gold); border: 1px solid rgba(232,184,75,0.3); }
-    .role-member { background: rgba(100,100,80,0.2); color: #998866; border: 1px solid #3d3020; }
-
-    .expand-icon {
-      color: #5a4a2a;
-      transition: transform 0.25s;
-      font-size: 0.8rem;
-    }
-    .member-card.open .expand-icon { transform: rotate(180deg); }
-
-    .member-body {
-      display: none;
-      padding: 0.75rem 1rem;
-    }
+    /* Members Section */
+    .members-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+    .member-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; transition: border-color 0.2s; }
+    .member-card:hover { border-color: #383842; }
+    .member-header { padding: 1rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; user-select: none; position: relative; }
+    .member-avatar { width: 40px; height: 40px; background: #2a2a30; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; color: var(--primary); border: 1px solid var(--border); }
+    .member-name { font-weight: 600; font-size: 1.05rem; }
+    .member-role { margin-left: auto; margin-right: 2.5rem; padding: 0.2rem 0.5rem; font-size: 0.7rem; font-weight: bold; border-radius: 3px; text-transform: uppercase; }
+    .role-leader { background: rgba(255, 184, 52, 0.15); color: var(--accent); }
+    .role-officer { background: rgba(175, 129, 253, 0.15); color: var(--primary); }
+    .role-member { background: rgba(168, 168, 179, 0.1); color: var(--text-muted); }
+    .expand-icon { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem; transition: transform 0.2s; }
+    
+    .member-body { display: none; padding: 0 1rem 1rem 4rem; border-top: 1px solid rgba(255,255,255,0.02); background: rgba(0,0,0,0.1); }
     .member-card.open .member-body { display: block; }
+    .member-card.open .expand-icon { transform: translateY(-50%) rotate(180deg); }
 
-    .pj-item {
-      padding: 0.6rem 0;
-      border-bottom: 1px solid rgba(61,48,32,0.5);
-    }
+    /* PJ Items inside members */
+    .pj-item { padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
     .pj-item:last-child { border-bottom: none; }
-    .pj-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 0.35rem;
-    }
-    .pj-name {
-      font-family: 'Cinzel', serif;
-      font-size: 0.85rem;
-      color: #c8b880;
-    }
-    .pj-class {
-      font-size: 0.72rem; color: #7a6a4a;
-      font-style: italic;
-    }
-    .pj-level {
-      font-family: 'Cinzel', serif;
-      font-size: 0.78rem;
-      color: var(--gold-dark);
-      background: rgba(160,120,24,0.12);
-      padding: 0.1rem 0.5rem;
-      border-radius: 2px;
-      border: 1px solid rgba(160,120,24,0.3);
-    }
-    .pj-oficios {
-      display: flex; flex-wrap: wrap; gap: 0.3rem;
-    }
-    .oficio-tag {
-      font-size: 0.68rem;
-      padding: 0.1rem 0.5rem;
-      border-radius: 2px;
-      letter-spacing: 0.06em;
-    }
-    .oficio-harvest { background: rgba(30,132,73,0.15); color: #27ae60; border: 1px solid rgba(30,132,73,0.3); }
-    .oficio-craft  { background: rgba(36,113,163,0.15); color: #5dade2; border: 1px solid rgba(36,113,163,0.3); }
-    .oficio-combat { background: rgba(192,57,43,0.15); color: #e74c3c; border: 1px solid rgba(192,57,43,0.3); }
-    .oficio-misc   { background: rgba(120,80,160,0.15); color: #af7ac5; border: 1px solid rgba(120,80,160,0.3); }
+    .pj-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+    .pj-name { font-weight: 600; font-size: 0.95rem; color: #fff; }
+    .pj-class { font-size: 0.85rem; color: var(--text-muted); }
+    .pj-level { font-size: 0.8rem; background: #26262b; padding: 0.1rem 0.4rem; border-radius: 3px; color: var(--accent); font-weight: 600; }
+    .pj-oficios { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; }
+    .oficio-tag { font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 3px; font-weight: 600; }
+    .oficio-reco { background: rgba(62, 247, 167, 0.12); color: var(--success); }
+    .oficio-craft { background: rgba(175, 129, 253, 0.12); color: var(--primary); }
 
-    /* ADD MEMBER FORM */
-    .form-panel {
-      background: var(--parchment-mid);
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      padding: 1.5rem;
-      margin-top: 1.5rem;
-    }
-    .form-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
-    .form-field {
-      display: flex; flex-direction: column; gap: 0.3rem; flex: 1; min-width: 160px;
-    }
-    .form-label {
-      font-family: 'Cinzel', serif;
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--gold-dark);
-    }
-    .form-input, .form-select {
-      background: var(--parchment);
-      border: 1px solid var(--border-color);
-      color: #c8b880;
-      padding: 0.5rem 0.75rem;
-      border-radius: 2px;
-      font-family: 'Crimson Pro', serif;
-      font-size: 0.95rem;
-      transition: border-color 0.2s;
-      outline: none;
-      width: 100%;
-    }
-    .form-input:focus, .form-select:focus { border-color: var(--gold-dark); }
-    .form-select option { background: var(--parchment-mid); }
+    /* Calendar Design */
+    .calendar-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; background: var(--bg-card); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; }
+    .weekday-label { text-align: center; font-size: 0.75rem; font-weight: bold; color: var(--text-muted); padding: 0.5rem 0; text-transform: uppercase; }
+    .cal-day { background: var(--bg-card); border: 1px solid var(--border); min-height: 80px; padding: 0.4rem; border-radius: 4px; display: flex; flex-direction: column; gap: 0.2rem; }
+    .cal-day.empty { background: transparent; border-color: transparent; }
+    .cal-day.today { border-color: var(--primary); background: linear-gradient(to bottom right, var(--bg-card), #1b1625); }
+    .cal-day .day-num { font-size: 0.85rem; font-weight: bold; color: var(--text-muted); margin-bottom: 0.2rem; }
+    .cal-day.today .day-num { color: var(--primary); }
+    .day-event { font-size: 0.68rem; padding: 0.15rem 0.3rem; border-radius: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+    .event-almanax { background: rgba(255, 184, 52, 0.15); color: var(--accent); border-left: 2px solid var(--accent); }
+    .event-gremio { background: rgba(175, 129, 253, 0.15); color: var(--primary); border-left: 2px solid var(--primary); }
+    .event-mazmorra { background: rgba(62, 247, 167, 0.15); color: var(--success); border-left: 2px solid var(--success); }
 
-    .btn {
-      font-family: 'Cinzel', serif;
-      font-size: 0.78rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      padding: 0.55rem 1.4rem;
-      border-radius: 2px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-    }
-    .btn-gold {
-      background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
-      color: var(--ink);
-      font-weight: 700;
-    }
-    .btn-gold:hover {
-      box-shadow: 0 0 16px rgba(232,184,75,0.3);
-      filter: brightness(1.1);
-    }
-    .btn-outline {
-      background: transparent;
-      color: var(--gold-dark);
-      border: 1px solid var(--border-color);
-    }
-    .btn-outline:hover { border-color: var(--gold-dark); color: var(--gold); }
-    .btn-danger {
-      background: transparent;
-      color: #c0392b;
-      border: 1px solid rgba(192,57,43,0.3);
-      font-size: 0.7rem; padding: 0.25rem 0.6rem;
-    }
-    .btn-danger:hover { background: rgba(192,57,43,0.1); }
+    /* Modals structural style */
+    .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 999; padding: 1rem; }
+    .modal-overlay.open { display: flex; }
+    .modal-content { background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; width: 100%; max-width: 450px; border-radius: 8px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+    .modal-header h3 { font-size: 1.2rem; }
+    .close-modal-btn { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; }
+    .close-modal-btn:hover { color: #fff; }
 
-    /* --- ALMANAX CALENDAR --- */
-    .calendar-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 1.5rem;
-    }
-    .calendar-month {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 1.1rem;
-      color: var(--gold);
-    }
-    .calendar-nav {
-      display: flex; gap: 0.5rem;
-    }
-    .cal-nav-btn {
-      background: var(--parchment-light);
-      border: 1px solid var(--border-color);
-      color: var(--gold-dark);
-      width: 32px; height: 32px;
-      border-radius: 2px;
-      cursor: pointer;
-      font-family: 'Cinzel', serif;
-      font-size: 0.9rem;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
-    }
-    .cal-nav-btn:hover { border-color: var(--gold-dark); color: var(--gold); }
+    /* Oficios list creation area tags */
+    .selected-oficios-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; min-height: 25px; }
+    .selected-oficio { font-size: 0.72rem; background: #26262b; border: 1px solid var(--border); padding: 0.2rem 0.5rem; border-radius: 3px; color: var(--primary); cursor: pointer; }
+    .selected-oficio:hover { border-color: var(--danger); color: var(--danger); }
 
-    .calendar-weekdays {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      gap: 4px; margin-bottom: 4px;
-    }
-    .weekday-label {
-      font-family: 'Cinzel', serif;
-      font-size: 0.68rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #5a4a2a;
-      text-align: center;
-      padding: 0.3rem;
-    }
-
-    .calendar-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-    }
-    .cal-day {
-      background: var(--parchment-mid);
-      border: 1px solid var(--border-color);
-      border-radius: 2px;
-      padding: 0.4rem;
-      min-height: 64px;
-      position: relative;
-      transition: border-color 0.2s, background 0.2s;
-      cursor: pointer;
-    }
-    .cal-day:hover { border-color: var(--gold-dark); }
-    .cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
-    .cal-day.today {
-      border-color: var(--gold-dark);
-      background: rgba(232,184,75,0.06);
-    }
-    .cal-day.today .day-num { color: var(--gold); }
-    .cal-day.has-event { border-color: rgba(192,57,43,0.5); }
-
-    .day-num {
-      font-family: 'Cinzel', serif;
-      font-size: 0.78rem;
-      color: #7a6a4a;
-      font-weight: 600;
-    }
-    .day-event {
-      font-size: 0.65rem;
-      margin-top: 0.25rem;
-      padding: 0.1rem 0.3rem;
-      border-radius: 2px;
-      line-height: 1.3;
-      word-break: break-word;
-    }
-    .event-dungeon { background: rgba(192,57,43,0.18); color: #e74c3c; }
-    .event-boss    { background: rgba(160,80,160,0.18); color: #af7ac5; }
-    .event-harvest { background: rgba(30,132,73,0.18); color: #27ae60; }
-    .event-almanax { background: rgba(232,184,75,0.15); color: var(--gold); }
-    .event-custom  { background: rgba(36,113,163,0.18); color: #5dade2; }
-
-    /* ADD EVENT */
-    .event-form {
-      background: var(--parchment-mid);
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      padding: 1.25rem;
-      margin-top: 1.5rem;
-    }
-
-    /* LEGEND */
-    .legend {
-      display: flex; flex-wrap: wrap; gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-    .legend-item {
-      display: flex; align-items: center; gap: 0.4rem;
-      font-size: 0.78rem; color: #7a6a4a;
-    }
-    .legend-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-    }
-
-    /* MODAL */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.7);
-      align-items: center; justify-content: center;
-      padding: 1rem;
-    }
-    .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .modal {
-      background: var(--parchment-mid);
-      border: 1px solid var(--border-color);
-      border-top: 2px solid var(--gold-dark);
-      border-radius: 4px;
-      padding: 1.75rem;
-      max-width: 480px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
-      animation: slideUp 0.25s ease;
-    }
-    @keyframes slideUp {
-      from { transform: translateY(16px); opacity: 0; }
-      to   { transform: translateY(0); opacity: 1; }
-    }
-    .modal-title {
-      font-family: 'Cinzel', serif;
-      font-size: 1rem;
-      color: var(--gold);
-      margin-bottom: 1rem;
-    }
-    .modal-footer {
-      display: flex; justify-content: flex-end; gap: 0.5rem;
-      margin-top: 1rem;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 640px) {
-      .nav-tab { padding: 0.75rem 1rem; font-size: 0.72rem; letter-spacing: 0.1em; }
-      .hero-stats { gap: 1.5rem; }
-      .cal-day { min-height: 48px; padding: 0.25rem; }
-      .day-event { display: none; }
-    }
-
-    /* NOTICE */
-    .notice {
-      background: rgba(232,184,75,0.07);
-      border: 1px solid rgba(232,184,75,0.2);
-      border-left: 3px solid var(--gold-dark);
-      padding: 0.75rem 1rem;
-      border-radius: 2px;
-      font-size: 0.88rem;
-      color: #a09060;
-      margin-bottom: 1.5rem;
-    }
-
-    .tag-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-    .selected-oficio {
-      display: flex; align-items: center; gap: 0.3rem;
-      background: rgba(36,113,163,0.15);
-      border: 1px solid rgba(36,113,163,0.3);
-      color: #5dade2;
-      font-size: 0.72rem; padding: 0.15rem 0.5rem;
-      border-radius: 2px; cursor: pointer;
-    }
-    .selected-oficio:hover { background: rgba(192,57,43,0.15); border-color: rgba(192,57,43,0.3); color: #e74c3c; }
+    /* Hide admin features dynamically by body status */
+    body:not(.is-admin) .admin-only { display: none !important; }
   </style>
 </head>
 <body>
-<div id="app">
 
-  <!-- HERO -->
-  <header class="hero">
-    <div class="hero-emblem">
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="32,4 40,24 62,24 44,38 51,58 32,46 13,58 20,38 2,24 24,24" fill="none" stroke="#e8b84b" stroke-width="2" stroke-linejoin="round"/>
-        <circle cx="32" cy="32" r="8" fill="rgba(232,184,75,0.15)" stroke="#a07818" stroke-width="1.5"/>
-        <circle cx="32" cy="32" r="3" fill="#e8b84b"/>
-      </svg>
+  <!-- BANNER PRINCIPAL DE LA WEB -->
+  <header class="header-banner">
+    <div class="auth-container">
+      <span id="authBadgeGuest" class="badge badge-guest">Modo Lectura</span>
+      <span id="authBadgeAdmin" class="badge badge-admin hidden">Administrador</span>
+      <button id="btnAuthAction" class="btn" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="window.handleAuthAction()">Entrar</button>
     </div>
-    <h1 class="guild-name" id="guildName">Los Inmortales</h1>
-    <p class="guild-subtitle" id="guildServer">Servidor: Mono | Nivel de gremio: 42</p>
-    <p class="guild-description" id="guildDesc">
-      "Unidos por el honor, forjados en batalla. Buscamos el poder en cada rincón de las Doce Tierras."
-    </p>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="hero-stat-value" id="statUsers">0</div>
-        <div class="hero-stat-label">Jugadores</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-value" id="statPJs">0</div>
-        <div class="hero-stat-label">Personajes</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-value" id="statEvents">0</div>
-        <div class="hero-stat-label">Eventos este mes</div>
-      </div>
-    </div>
+    <h1 id="guildName">Los-<span>Perversos</span></h1>
+    <p id="guildServer">Cargando datos del servidor...</p>
+    <p id="guildDesc" style="font-style: italic; color: var(--text-muted); margin-top: 0.5rem;"></p>
   </header>
 
-  <!-- NAV -->
-  <nav class="nav-tabs">
-    <button class="nav-tab active" onclick="showSection('members', this)">Miembros</button>
-    <button class="nav-tab" onclick="showSection('calendar', this)">Almanax</button>
-    <button class="nav-tab" onclick="showSection('settings', this)">Gremio</button>
-  </nav>
-
-  <!-- MEMBERS SECTION -->
-  <section class="section active" id="sec-members">
-    <div class="notice">
-      Haz clic en un jugador para ver sus personajes. Usa el formulario de abajo para agregar nuevos miembros.
-    </div>
-
-    <div class="section-title">Jugadores del Gremio</div>
-    <div class="members-grid" id="membersGrid"></div>
-
-    <div class="divider"><span class="divider-icon">+</span></div>
-    <div class="section-title">Agregar Jugador</div>
-    <div class="form-panel">
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Nombre de usuario</label>
-          <input class="form-input" id="inp-user" placeholder="Ej: Xarok_GT" />
-        </div>
-        <div class="form-field">
-          <label class="form-label">Rol en el gremio</label>
-          <select class="form-select" id="inp-role">
-            <option value="member">Miembro</option>
-            <option value="officer">Oficial</option>
-            <option value="leader">Lider</option>
-          </select>
-        </div>
+  <div class="container">
+    
+    <!-- CONTADORES GLOBALES (STATS) -->
+    <section class="stats-row">
+      <div class="stat-box">
+        <div id="statUsers" class="num">0</div>
+        <div class="label">Jugadores</div>
       </div>
-      <button class="btn btn-gold" onclick="addMember()">Agregar Jugador</button>
-    </div>
-  </section>
-
-  <!-- CALENDAR SECTION -->
-  <section class="section" id="sec-calendar">
-    <div class="calendar-header">
-      <div class="calendar-month" id="calMonthLabel"></div>
-      <div class="calendar-nav">
-        <button class="cal-nav-btn" onclick="changeMonth(-1)">&#8249;</button>
-        <button class="cal-nav-btn" onclick="changeMonth(1)">&#8250;</button>
+      <div class="stat-box">
+        <div id="statPJs" class="num">0</div>
+        <div class="label">Personajes Totales</div>
       </div>
-    </div>
-
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div> Mazmorra grupal</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#af7ac5"></div> Boss / Archimonstruo</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div> Recolecta masiva</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#e8b84b"></div> Bonus Almanax</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#5dade2"></div> Evento especial</div>
-    </div>
-
-    <div class="calendar-weekdays" id="calWeekdays"></div>
-    <div class="calendar-grid" id="calGrid"></div>
-
-    <div class="divider"><span class="divider-icon">+</span></div>
-    <div class="section-title">Agregar Evento</div>
-    <div class="event-form">
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Dia del mes</label>
-          <input class="form-input" id="inp-evDay" type="number" min="1" max="31" placeholder="15" />
-        </div>
-        <div class="form-field">
-          <label class="form-label">Tipo de evento</label>
-          <select class="form-select" id="inp-evType">
-            <option value="dungeon">Mazmorra grupal</option>
-            <option value="boss">Boss / Archimonstruo</option>
-            <option value="harvest">Recolecta masiva</option>
-            <option value="almanax">Bonus Almanax</option>
-            <option value="custom">Evento especial</option>
-          </select>
-        </div>
+      <div class="stat-box">
+        <div id="statEvents" class="num">0</div>
+        <div class="label">Eventos del Mes</div>
       </div>
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Descripcion</label>
-          <input class="form-input" id="inp-evDesc" placeholder="Ej: Mazmorra de Kanigroula x8" />
-        </div>
-      </div>
-      <button class="btn btn-gold" onclick="addEvent()">Agregar al Almanax</button>
-    </div>
-  </section>
+    </section>
 
-  <!-- SETTINGS SECTION -->
-  <section class="section" id="sec-settings">
-    <div class="section-title">Configuracion del Gremio</div>
-    <div class="form-panel">
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Nombre del gremio</label>
-          <input class="form-input" id="set-name" value="Los Inmortales" />
-        </div>
-        <div class="form-field">
-          <label class="form-label">Nivel del gremio</label>
-          <input class="form-input" id="set-level" value="42" type="number" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Servidor</label>
-          <input class="form-input" id="set-server" value="Mono" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-field" style="flex-basis:100%">
-          <label class="form-label">Descripcion / Lema</label>
-          <input class="form-input" id="set-desc" value="Unidos por el honor, forjados en batalla. Buscamos el poder en cada rincon de las Doce Tierras." />
-        </div>
-      </div>
-      <button class="btn btn-gold" onclick="saveSettings()">Guardar Cambios</button>
-    </div>
+    <!-- NAVEGACIÓN POR PESTAÑAS -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" onclick="window.showSection('members', this)">Miembros y Personajes</button>
+      <button class="nav-tab" onclick="window.showSection('calendar', this)">Calendario / Almanax</button>
+      <button class="nav-tab admin-only" onclick="window.showSection('settings', this)">Configuración Gremio</button>
+    </nav>
 
-    <div class="divider"><span class="divider-icon">i</span></div>
-    <div class="section-title">Como hostear gratis</div>
-    <div class="form-panel" style="font-size:0.92rem; color:#a09060; line-height:1.8;">
-      <p><strong style="color:var(--gold-dark)">1. GitHub Pages (recomendado):</strong><br>
-        Sube este archivo HTML a un repositorio en GitHub, ve a Settings > Pages, selecciona la rama main y el archivo index.html. Tu pagina estara disponible en <em>tuusuario.github.io/nombre-repo</em> en minutos.</p>
-      <br>
-      <p><strong style="color:var(--gold-dark)">2. Netlify Drop:</strong><br>
-        Abre netlify.com/drop, arrastra la carpeta con tu archivo HTML y listo. Te da una URL publica al instante. Sin registro obligatorio.</p>
-      <br>
-      <p><strong style="color:var(--gold-dark)">3. Vercel:</strong><br>
-        Conecta tu repo de GitHub con vercel.com y despliega automaticamente con cada cambio que hagas.</p>
-      <br>
-      <p style="color:#5a4a2a; font-style:italic;">Nota: todos los datos se guardan en el navegador (localStorage). Para compartir datos entre miembros en tiempo real, considera agregar Firebase Firestore (gratuito) mas adelante.</p>
-    </div>
-  </section>
-
-</div>
-
-<!-- MODAL: Agregar personaje -->
-<div class="modal-overlay" id="pjModal">
-  <div class="modal">
-    <div class="modal-title" id="pjModalTitle">Agregar personaje</div>
-    <div class="form-row">
-      <div class="form-field">
-        <label class="form-label">Nombre del PJ</label>
-        <input class="form-input" id="pj-name" placeholder="Ej: Xaroken" />
-      </div>
-      <div class="form-field">
-        <label class="form-label">Clase</label>
-        <select class="form-select" id="pj-class">
-          <option>Yopuka</option><option>Iop</option><option>Cra</option><option>Ecaflip</option>
-          <option>Eniripsa</option><option>Feca</option><option>Osamodas</option><option>Pandawa</option>
-          <option>Sadida</option><option>Sacrier</option><option>Sram</option><option>Xelor</option>
-          <option>Rogue</option><option>Masqueraider</option><option>Eliotrope</option><option>Huppermage</option>
+    <!-- SECCIÓN 1: MIEMBROS -->
+    <div id="sec-members" class="section active">
+      <!-- Añadir Miembro (Solo visible para Administradores) -->
+      <div class="form-inline admin-only">
+        <span style="font-weight: 600; font-size: 0.9rem; color: var(--accent);">Nuevo Jugador:</span>
+        <input type="text" id="inp-user" class="form-input" style="width: auto; flex: 1; min-width: 150px;" placeholder="Nombre de usuario (ej: El-Perverso)">
+        <select id="inp-role" class="form-input" style="width: auto; min-width: 120px;">
+          <option value="member">Miembro</option>
+          <option value="officer">Oficial</option>
+          <option value="leader">Líder</option>
         </select>
+        <button class="btn btn-primary" onclick="window.addMember()">Registrar</button>
+      </div>
+
+      <!-- Cuadrícula dinámica de miembros -->
+      <div id="membersGrid" class="members-grid">
+        <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Cargando lista de jugadores...</p>
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-field">
-        <label class="form-label">Nivel</label>
-        <input class="form-input" id="pj-level" type="number" min="1" max="200" placeholder="200" />
+
+    <!-- SECCIÓN 2: CALENDARIO -->
+    <div id="sec-calendar" class="section">
+      <!-- Añadir Eventos (Solo visible para Administradores) -->
+      <div class="form-inline admin-only" style="gap: 0.75rem;">
+        <span style="font-weight: 600; font-size: 0.9rem; color: var(--accent);">Programar Evento:</span>
+        <input type="number" id="inp-evDay" class="form-input" style="width: 70px;" placeholder="Día" min="1" max="31">
+        <select id="inp-evType" class="form-input" style="width: auto; min-width: 130px;">
+          <option value="almanax">Almanax</option>
+          <option value="gremio">Evento Gremio</option>
+          <option value="mazmorra">Mazmorra / Drop</option>
+        </select>
+        <input type="text" id="inp-evDesc" class="form-input" style="width: auto; flex: 1; min-width: 150px;" placeholder="Descripción corta del evento">
+        <button class="btn btn-primary" onclick="window.addEvent()">Añadir</button>
       </div>
+
+      <!-- Calendario Grid -->
+      <div class="calendar-controls">
+        <button class="btn" onclick="window.changeMonth(-1)">&larr; Mes Anterior</button>
+        <h2 id="calMonthLabel" style="font-size: 1.2rem; color: #fff;">-</h2>
+        <button class="btn" onclick="window.changeMonth(1)">Mes Siguiente &rarr;</button>
+      </div>
+      <div id="calWeekdays" class="calendar-grid" style="margin-bottom: 0.2rem;"></div>
+      <div id="calGrid" class="calendar-grid"></div>
     </div>
-    <div style="margin-bottom:0.75rem">
-      <div class="form-label" style="margin-bottom:0.5rem">Oficios</div>
-      <div class="form-row" style="margin-bottom:0.5rem">
-        <div class="form-field">
-          <select class="form-select" id="pj-oficio-select">
-            <optgroup label="Recoleccion">
-              <option value="Granjero|harvest">Granjero</option>
-              <option value="Leñador|harvest">Lenador</option>
-              <option value="Minero|harvest">Minero</option>
-              <option value="Pescador|harvest">Pescador</option>
-              <option value="Herborista|harvest">Herborista</option>
-              <option value="Cazador|harvest">Cazador</option>
-            </optgroup>
-            <optgroup label="Artesania">
-              <option value="Panadero|craft">Panadero</option>
-              <option value="Herrero de armas|craft">Herrero de armas</option>
-              <option value="Herrero de escudos|craft">Herrero de escudos</option>
-              <option value="Joyero|craft">Joyero</option>
-              <option value="Sastre|craft">Sastre</option>
-              <option value="Zapatero|craft">Zapatero</option>
-              <option value="Alquimista|craft">Alquimista</option>
-              <option value="Escultor|craft">Escultor</option>
-              <option value="Carpintero|craft">Carpintero</option>
-            </optgroup>
-            <optgroup label="Combate">
-              <option value="Cazarecompensas|combat">Cazarecompensas</option>
-              <option value="Soldado|combat">Soldado</option>
-            </optgroup>
-          </select>
+
+    <!-- SECCIÓN 3: CONFIGURACIÓN GLOBAL (Solo visible para Administradores) -->
+    <div id="sec-settings" class="section admin-only">
+      <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 6px;">
+        <h2 style="font-size: 1.3rem; margin-bottom: 1.2rem; color: var(--accent);">Ajustes de Información Pública</h2>
+        
+        <div class="form-group">
+          <label for="set-name">Nombre de la Alianza/Gremio:</label>
+          <input type="text" id="set-name" class="form-input" placeholder="Ej: Los-Perversos">
         </div>
-        <div>
-          <button class="btn btn-outline" onclick="addOficioTag()">Agregar</button>
+        
+        <div class="form-group">
+          <label for="set-level">Nivel actual del Gremio:</label>
+          <input type="number" id="set-level" class="form-input" placeholder="Ej: 50">
         </div>
+        
+        <div class="form-group">
+          <label for="set-server">Servidor del Juego:</label>
+          <input type="text" id="set-server" class="form-input" placeholder="Ej: Rubilax, Tal Kasha...">
+        </div>
+        
+        <div class="form-group">
+          <label for="set-desc">Anuncio del tablón / Descripción corta:</label>
+          <textarea id="set-desc" class="form-input" rows="3" placeholder="Escribe un saludo o metas actuales del gremio..."></textarea>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="window.saveSettings()">Guardar Configuración</button>
       </div>
-      <div class="tag-list" id="pj-oficios-tags"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closePJModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="savePJ()">Guardar PJ</button>
+
+  </div>
+
+  <!-- MODAL A: AUTENTICACIÓN (LOGIN ADMIN) -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Acceso de Administrador</h3>
+        <button class="close-modal-btn" onclick="window.closeAuthModal()">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="auth-email">Correo Electrónico:</label>
+        <input type="email" id="auth-email" class="form-input" placeholder="admin@correo.com">
+      </div>
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label for="auth-pass">Contraseña:</label>
+        <input type="password" id="auth-pass" class="form-input" placeholder="••••••••">
+      </div>
+      <button id="btnSubmitAuth" class="btn btn-primary" style="width: 100%;" onclick="window.submitLogin()">Ingresar</button>
     </div>
   </div>
-</div>
 
-<script>
-// ===================== DATA =====================
-const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const WEEKDAYS = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
-
-let state = JSON.parse(localStorage.getItem('dofus_guild_v2') || 'null') || {
-  guild: { name: 'Los Inmortales', level: 42, server: 'Mono', desc: 'Unidos por el honor, forjados en batalla. Buscamos el poder en cada rincon de las Doce Tierras.' },
-  members: [
-    {
-      id: 1, username: 'Xarok_GT', role: 'leader',
-      pjs: [
-        { id: 101, name: 'Xaroken', cls: 'Yopuka', level: 200, oficios: [{ name:'Minero', type:'harvest' },{ name:'Herrero de armas', type:'craft' }] },
-        { id: 102, name: 'XarokSupport', cls: 'Eniripsa', level: 180, oficios: [{ name:'Alquimista', type:'craft' }] }
-      ]
-    },
-    {
-      id: 2, username: 'Sombra_Dark', role: 'officer',
-      pjs: [
-        { id: 201, name: 'LaSombra', cls: 'Sram', level: 195, oficios: [{ name:'Cazador', type:'harvest' }] },
-        { id: 202, name: 'DarkCra', cls: 'Cra', level: 160, oficios: [] }
-      ]
-    },
-    {
-      id: 3, username: 'Panda_Farmer', role: 'member',
-      pjs: [
-        { id: 301, name: 'PandaGordito', cls: 'Pandawa', level: 140, oficios: [{ name:'Panadero', type:'craft' },{ name:'Granjero', type:'harvest' }] }
-      ]
-    }
-  ],
-  events: {
-    '2025-07-05': [{ desc:'Mazmorra de Bwork Mage', type:'dungeon' }],
-    '2025-07-12': [{ desc:'Archimonstruo del Pantano', type:'boss' }],
-    '2025-07-15': [{ desc:'Bonus EXP x2 Almanax', type:'almanax' }],
-    '2025-07-20': [{ desc:'Recolecta de trigo grupal', type:'harvest' }],
-    '2025-07-25': [{ desc:'Torneo interno del gremio', type:'custom' }],
-  }
-};
-
-let currentYear = new Date().getFullYear();
-let currentMonth = new Date().getMonth();
-let editingMemberId = null;
-let tempOficios = [];
-let nextId = 1000;
-
-function save() { localStorage.setItem('dofus_guild_v2', JSON.stringify(state)); }
-
-// ===================== SECTIONS =====================
-function showSection(name, btn) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  btn.classList.add('active');
-  if (name === 'calendar') renderCalendar();
-  if (name === 'members') renderMembers();
-}
-
-// ===================== MEMBERS =====================
-function renderMembers() {
-  const grid = document.getElementById('membersGrid');
-  grid.innerHTML = '';
-  state.members.forEach(m => {
-    const card = document.createElement('div');
-    card.className = 'member-card';
-    card.id = 'card-' + m.id;
-    const roleClass = { leader:'role-leader', officer:'role-officer', member:'role-member' }[m.role];
-    const roleLabel = { leader:'Lider', officer:'Oficial', member:'Miembro' }[m.role];
-    const initials = m.username.slice(0,2).toUpperCase();
-    card.innerHTML = `
-      <div class="member-header" onclick="toggleCard(${m.id})">
-        <div class="member-avatar">${initials}</div>
-        <div>
-          <div class="member-name">${m.username}</div>
-          <div style="font-size:0.72rem;color:#5a4a2a;margin-top:0.1rem">${m.pjs.length} personaje${m.pjs.length !== 1 ? 's' : ''}</div>
-        </div>
-        <span class="member-role ${roleClass}">${roleLabel}</span>
-        <span class="expand-icon">&#9660;</span>
+  <!-- MODAL B: AGREGAR PERSONAJE (PJ) -->
+  <div id="pjModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="pjModalTitle">Agregar PJ</h3>
+        <button class="close-modal-btn" onclick="window.closePJModal()">&times;</button>
       </div>
-      <div class="member-body">
-        <div id="pjlist-${m.id}">${renderPJList(m)}</div>
-        <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
-          <button class="btn btn-outline" style="font-size:0.72rem;padding:0.3rem 0.8rem" onclick="openPJModal(${m.id})">+ Agregar PJ</button>
-          <button class="btn btn-danger" onclick="removeMember(${m.id})">Eliminar jugador</button>
+      
+      <div class="form-group">
+        <label for="pj-name">Nombre del Personaje:</label>
+        <input type="text" id="pj-name" class="form-input" placeholder="Ej: Perverso-Master">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="form-group">
+          <label for="pj-class">Clase:</label>
+          <select id="pj-class" class="form-input">
+            <option value="Iop">Yopuka</option>
+            <option value="Cra">Ocra</option>
+            <option value="Eniripsa">Eniripsa</option>
+            <option value="Sram">Sram</option>
+            <option value="Sacrier">Sacrógrito</option>
+            <option value="Sadida">Sadida</option>
+            <option value="Osamodas">Osamodas</option>
+            <option value="Enutrof">Anutrof</option>
+            <option value="Xelor">Xelor</option>
+            <option value="Pandawa">Pandawa</option>
+            <option value="Ecaflip">Zurcarák</option>
+            <option value="Feca">Feca</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="pj-level">Nivel:</label>
+          <input type="number" id="pj-level" class="form-input" value="1" min="1" max="200">
         </div>
       </div>
-    `;
-    grid.appendChild(card);
-  });
-  updateStats();
-}
 
-function renderPJList(m) {
-  if (!m.pjs.length) return '<p style="color:#5a4a2a;font-style:italic;font-size:0.88rem;padding:0.3rem 0">Sin personajes registrados.</p>';
-  return m.pjs.map(pj => `
-    <div class="pj-item">
-      <div class="pj-header">
-        <div>
-          <span class="pj-name">${pj.name}</span>
-          <span class="pj-class"> - ${pj.cls}</span>
+      <!-- Añadir Oficios dinámicamente -->
+      <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+        <label>Vincular Oficio:</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <select id="pj-oficio-select" class="form-input" style="flex: 1;">
+            <option value="">-- Elige Oficio --</option>
+            <option value="Alquimista|reco">Alquimista (Reco)</option>
+            <option value="Campesino|reco">Campesino (Reco)</option>
+            <option value="Leñador|reco">Leñador (Reco)</option>
+            <option value="Minero|reco">Minero (Reco)</option>
+            <option value="Pescador|reco">Pescador (Reco)</option>
+            <option value="Forjador|craft">Forjador (Craft)</option>
+            <option value="Escultor|craft">Escultor (Craft)</option>
+            <option value="Sastre|craft">Sastre (Craft)</option>
+            <option value="Zapatero|craft">Zapatero (Craft)</option>
+            <option value="Joyero|craft">Joyero (Craft)</option>
+          </select>
+          <button class="btn" type="button" onclick="window.addOficioTag()">+</button>
         </div>
-        <div style="display:flex;align-items:center;gap:0.4rem">
-          <span class="pj-level">Nv ${pj.level}</span>
-          <button class="btn btn-danger" onclick="removePJ(${m.id},${pj.id})">x</button>
-        </div>
+        <div id="pj-oficios-tags" class="selected-oficios-tags"></div>
       </div>
-      <div class="pj-oficios">
-        ${pj.oficios.map(o => `<span class="oficio-tag oficio-${o.type}">${o.name}</span>`).join('') || '<span style="font-size:0.7rem;color:#5a4a2a;font-style:italic">Sin oficios</span>'}
-      </div>
+
+      <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="window.savePJ()">Guardar Personaje</button>
     </div>
-  `).join('');
-}
+  </div>
 
-function toggleCard(id) {
-  const card = document.getElementById('card-' + id);
-  card.classList.toggle('open');
-}
+  <!-- LÓGICA CORE DE FIREBASE COMPATIBLE Y BLINDADA -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+    import { getFirestore, doc, onSnapshot, updateDoc, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-function addMember() {
-  const username = document.getElementById('inp-user').value.trim();
-  const role = document.getElementById('inp-role').value;
-  if (!username) { alert('Ingresa un nombre de usuario.'); return; }
-  nextId++;
-  state.members.push({ id: nextId, username, role, pjs: [] });
-  save(); renderMembers();
-  document.getElementById('inp-user').value = '';
-}
+    // Tu configuración oficial de Firebase para Los-Perversos
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-ZARNy4qlxb8b5p26-DcuHQEw3BSn-oE",
+      authDomain: "miembros-c2d72.firebaseapp.com",
+      projectId: "miembros-c2d72",
+      storageBucket: "miembros-c2d72.firebasestorage.app",
+      messagingSenderId: "489865592759",
+      appId: "1:489865592759:web:1fb67cf15858e2639cf232",
+      measurementId: "G-1W6NPV7X03"
+    };
 
-function removeMember(id) {
-  if (!confirm('Eliminar este jugador y todos sus personajes?')) return;
-  state.members = state.members.filter(m => m.id !== id);
-  save(); renderMembers();
-}
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-function removePJ(memberId, pjId) {
-  const m = state.members.find(m => m.id === memberId);
-  if (!m) return;
-  m.pjs = m.pjs.filter(p => p.id !== pjId);
-  save(); renderMembers();
-}
+    // --- ESTADO EN MEMORIA DE LA APP ---
+    window.MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    window.WEEKDAYS = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+    
+    window.guildData = { name: 'Los-Perversos', level: 1, server: 'Cargando...', desc: '...' };
+    window.membersList = [];
+    window.eventsData = {};
 
-function updateStats() {
-  document.getElementById('statUsers').textContent = state.members.length;
-  document.getElementById('statPJs').textContent = state.members.reduce((a,m) => a + m.pjs.length, 0);
-  const monthKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
-  const evCount = Object.keys(state.events).filter(k => k.startsWith(monthKey)).reduce((a, k) => a + state.events[k].length, 0);
-  document.getElementById('statEvents').textContent = evCount;
-}
+    window.currentYear = new Date().getFullYear();
+    window.currentMonth = new Date().getMonth();
+    window.editingMemberId = null;
+    window.tempOficios = [];
 
-// ===================== PJ MODAL =====================
-function openPJModal(memberId) {
-  editingMemberId = memberId;
-  tempOficios = [];
-  document.getElementById('pj-name').value = '';
-  document.getElementById('pj-level').value = '';
-  document.getElementById('pj-oficios-tags').innerHTML = '';
-  const m = state.members.find(m => m.id === memberId);
-  document.getElementById('pjModalTitle').textContent = 'Agregar PJ para ' + m.username;
-  document.getElementById('pjModal').classList.add('open');
-}
+    // --- CONTROL DE ARRANQUE SEGURO (ESPERAR AL DOM) ---
+    document.addEventListener("DOMContentLoaded", () => {
+      
+      // 1. Escuchar metadatos del gremio
+      onSnapshot(doc(db, "guild_config", "los-perversos"), (docSnap) => {
+        if (docSnap.exists()) {
+          window.guildData = docSnap.data();
+        } else {
+          setDoc(doc(db, "guild_config", "los-perversos"), window.guildData);
+        }
+        renderGuildHeader();
+        fillGuildSettingsForm();
+      });
 
-function closePJModal() {
-  document.getElementById('pjModal').classList.remove('open');
-  editingMemberId = null;
-}
+      // 2. Escuchar lista de miembros
+      onSnapshot(doc(db, "guild_data", "members"), (docSnap) => {
+        window.membersList = docSnap.exists() ? (docSnap.data().list || []) : [];
+        renderMembers();
+      });
 
-function addOficioTag() {
-  const sel = document.getElementById('pj-oficio-select');
-  const [name, type] = sel.value.split('|');
-  if (tempOficios.find(o => o.name === name)) return;
-  tempOficios.push({ name, type });
-  renderOficioTags();
-}
+      // 3. Escuchar eventos / Almanax
+      onSnapshot(doc(db, "guild_data", "events"), (docSnap) => {
+        window.eventsData = docSnap.exists() ? (docSnap.data().schedule || {}) : {};
+        const calSec = document.getElementById('sec-calendar');
+        if (calSec && calSec.classList.contains('active')) {
+          renderCalendar();
+        } else {
+          updateStatsOnly();
+        }
+      });
 
-function renderOficioTags() {
-  const container = document.getElementById('pj-oficios-tags');
-  container.innerHTML = tempOficios.map((o, i) =>
-    `<span class="selected-oficio" onclick="removeOficioTag(${i})" title="Clic para quitar">${o.name} x</span>`
-  ).join('');
-}
+      // 4. Monitoreo de Autenticación
+      onAuthStateChanged(auth, (user) => {
+        const bGuest = document.getElementById('authBadgeGuest');
+        const bAdmin = document.getElementById('authBadgeAdmin');
+        const bAction = document.getElementById('btnAuthAction');
 
-function removeOficioTag(i) {
-  tempOficios.splice(i, 1);
-  renderOficioTags();
-}
+        if (user) {
+          document.body.classList.add('is-admin');
+          if (bGuest) bGuest.classList.add('hidden');
+          if (bAdmin) bAdmin.classList.remove('hidden');
+          if (bAction) bAction.textContent = "Salir";
+        } else {
+          document.body.classList.remove('is-admin');
+          if (bAdmin) bAdmin.classList.add('hidden');
+          if (bGuest) bGuest.classList.remove('hidden');
+          if (bAction) bAction.textContent = "Entrar";
+        }
+        renderMembers();
+      });
 
-function savePJ() {
-  const name = document.getElementById('pj-name').value.trim();
-  const cls  = document.getElementById('pj-class').value;
-  const level = parseInt(document.getElementById('pj-level').value) || 1;
-  if (!name) { alert('Ingresa el nombre del personaje.'); return; }
-  const m = state.members.find(m => m.id === editingMemberId);
-  if (!m) return;
-  nextId++;
-  m.pjs.push({ id: nextId, name, cls, level, oficios: [...tempOficios] });
-  save(); renderMembers(); closePJModal();
-}
+      // 5. Modales (Cierre por click fuera)
+      const pModal = document.getElementById('pjModal');
+      const aModal = document.getElementById('authModal');
+      if (pModal) pModal.addEventListener('click', function(e) { if (e.target === this) window.closePJModal(); });
+      if (aModal) aModal.addEventListener('click', function(e) { if (e.target === this) window.closeAuthModal(); });
+    });
 
-// ===================== CALENDAR =====================
-function renderCalendar() {
-  const label = document.getElementById('calMonthLabel');
-  label.textContent = MONTHS[currentMonth] + ' ' + currentYear;
+    // --- FUNCIONES EXPUESTAS AL AMBITO GLOBAL ---
+    window.handleAuthAction = function() {
+      if (auth.currentUser) {
+        signOut(auth).then(() => alert('Sesión de administrador cerrada.'));
+      } else {
+        const am = document.getElementById('authModal');
+        if (am) am.classList.add('open');
+      }
+    };
 
-  const wdays = document.getElementById('calWeekdays');
-  wdays.innerHTML = WEEKDAYS.map(d => `<div class="weekday-label">${d}</div>`).join('');
+    window.closeAuthModal = function() {
+      const am = document.getElementById('authModal');
+      if (am) am.classList.remove('open');
+      const ae = document.getElementById('auth-email');
+      const ap = document.getElementById('auth-pass');
+      if (ae) ae.value = '';
+      if (ap) ap.value = '';
+    };
 
-  const grid = document.getElementById('calGrid');
-  grid.innerHTML = '';
+    window.submitLogin = function() {
+      const emailEl = document.getElementById('auth-email');
+      const passEl = document.getElementById('auth-pass');
+      const btn = document.getElementById('btnSubmitAuth');
+      
+      if (!emailEl || !passEl) return;
+      
+      const email = emailEl.value.trim();
+      const pass = passEl.value;
 
-  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const today = new Date();
+      if (!email || !pass) { alert('Completa los campos.'); return; }
+      if (btn) { btn.disabled = true; btn.textContent = "Validando..."; }
 
-  for (let i = 0; i < firstDay; i++) {
-    const empty = document.createElement('div');
-    empty.className = 'cal-day empty';
-    grid.appendChild(empty);
-  }
+      signInWithEmailAndPassword(auth, email, pass)
+        .then(() => {
+          window.closeAuthModal();
+        })
+        .catch((error) => {
+          alert('Credenciales incorrectas de administrador.');
+          console.error(error);
+        })
+        .finally(() => {
+          if (btn) { btn.disabled = false; btn.textContent = "Ingresar"; }
+        });
+    };
 
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const events = state.events[dateKey] || [];
-    const isToday = today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === d;
+    window.showSection = function(name, btn) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      
+      const targetSec = document.getElementById('sec-' + name);
+      if (targetSec) targetSec.classList.add('active');
+      if (btn) btn.classList.add('active');
+      
+      if (name === 'calendar') window.renderCalendar();
+      if (name === 'members') window.renderMembers();
+    };
 
-    const cell = document.createElement('div');
-    cell.className = 'cal-day' + (isToday ? ' today' : '') + (events.length ? ' has-event' : '');
-    cell.innerHTML = `<div class="day-num">${d}</div>` +
-      events.map(e => `<div class="day-event event-${e.type}">${e.desc}</div>`).join('');
-    grid.appendChild(cell);
-  }
-  updateStats();
-}
+    // --- LOGICA DE MIEMBROS & FIRESTORE ---
+    window.renderMembers = function() {
+      const grid = document.getElementById('membersGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      
+      if (window.membersList.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No hay jugadores registrados.</p>';
+        updateStatsOnly();
+        return;
+      }
 
-function changeMonth(dir) {
-  currentMonth += dir;
-  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
-  if (currentMonth > 11) { currentMonth = 0;  currentYear++; }
-  renderCalendar();
-}
+      window.membersList.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'member-card';
+        card.id = 'card-' + m.id;
+        const roleClass = { leader:'role-leader', officer:'role-officer', member:'role-member' }[m.role] || 'role-member';
+        const roleLabel = { leader:'Líder', officer:'Oficial', member:'Miembro' }[m.role] || 'Miembro';
+        const initials = m.username ? m.username.slice(0,2).toUpperCase() : '??';
+        
+        const adminButtons = document.body.classList.contains('is-admin') 
+          ? `<div style="display:flex;gap:0.5rem;margin-top:1rem" class="admin-only">
+               <button class="btn btn-outline" style="font-size:0.68rem;padding:0.4rem 0.8rem" onclick="window.openPJModal('${m.id}')">+ Agregar PJ</button>
+               <button class="btn btn-danger" onclick="window.removeMember('${m.id}')">Eliminar jugador</button>
+             </div>`
+          : '';
 
-function addEvent() {
-  const day  = parseInt(document.getElementById('inp-evDay').value);
-  const type = document.getElementById('inp-evType').value;
-  const desc = document.getElementById('inp-evDesc').value.trim();
-  if (!day || !desc) { alert('Completa el dia y la descripcion.'); return; }
-  const dateKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-  if (!state.events[dateKey]) state.events[dateKey] = [];
-  state.events[dateKey].push({ desc, type });
-  save(); renderCalendar();
-  document.getElementById('inp-evDay').value = '';
-  document.getElementById('inp-evDesc').value = '';
-}
+        card.innerHTML = `
+          <div class="member-header" onclick="window.toggleCard('${m.id}')">
+            <div class="member-avatar">${initials}</div>
+            <div>
+              <div class="member-name">${m.username || 'Sin Nombre'}</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.1rem">${(m.pjs || []).length} personaje${(m.pjs || []).length !== 1 ? 's' : ''}</div>
+            </div>
+            <span class="member-role ${roleClass}">${roleLabel}</span>
+            <span class="expand-icon">&#9660;</span>
+          </div>
+          <div class="member-body">
+            <div id="pjlist-${m.id}">${window.renderPJList(m)}</div>
+            ${adminButtons}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      updateStatsOnly();
+    };
 
-// ===================== SETTINGS =====================
-function saveSettings() {
-  state.guild.name   = document.getElementById('set-name').value.trim() || state.guild.name;
-  state.guild.level  = parseInt(document.getElementById('set-level').value) || state.guild.level;
-  state.guild.server = document.getElementById('set-server').value.trim() || state.guild.server;
-  state.guild.desc   = document.getElementById('set-desc').value.trim() || state.guild.desc;
-  document.getElementById('guildName').textContent = state.guild.name;
-  document.getElementById('guildServer').textContent = `Servidor: ${state.guild.server} | Nivel de gremio: ${state.guild.level}`;
-  document.getElementById('guildDesc').textContent = state.guild.desc;
-  save();
-  alert('Cambios guardados correctamente.');
-}
+    window.renderPJList = function(m) {
+      if (!m.pjs || !m.pjs.length) return '<p style="color:var(--text-muted);font-style:italic;font-size:0.8rem;padding:0.3rem 0">Sin personajes registrados.</p>';
+      const isSharedAdmin = document.body.classList.contains('is-admin');
+      
+      return m.pjs.map(pj => `
+        <div class="pj-item">
+          <div class="pj-header">
+            <div>
+              <span class="pj-name">${pj.name}</span>
+              <span class="pj-class"> - ${pj.cls}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.5rem">
+              <span class="pj-level">Nv ${pj.level}</span>
+              ${isSharedAdmin ? `<button class="btn btn-danger admin-only" onclick="window.removePJ('${m.id}','${pj.id}')">x</button>` : ''}
+            </div>
+          </div>
+          <div class="pj-oficios">
+            ${(pj.oficios || []).map(o => `<span class="oficio-tag oficio-${o.type}">${o.name}</span>`).join('') || '<span style="font-size:0.7rem;color:var(--text-muted);font-style:italic">Sin oficios</span>'}
+          </div>
+        </div>
+      `).join('');
+    };
 
-// Close modal on overlay click
-document.getElementById('pjModal').addEventListener('click', function(e) {
-  if (e.target === this) closePJModal();
-});
+    window.toggleCard = function(id) {
+      const card = document.getElementById('card-' + id);
+      if (card) card.classList.toggle('open');
+    };
 
-// ===================== INIT =====================
-(function init() {
-  document.getElementById('guildName').textContent = state.guild.name;
-  document.getElementById('guildServer').textContent = `Servidor: ${state.guild.server} | Nivel de gremio: ${state.guild.level}`;
-  document.getElementById('guildDesc').textContent = state.guild.desc;
-  document.getElementById('set-name').value = state.guild.name;
-  document.getElementById('set-level').value = state.guild.level;
-  document.getElementById('set-server').value = state.guild.server;
-  document.getElementById('set-desc').value = state.guild.desc;
-  renderMembers();
-  renderCalendar();
-})();
-</script>
+    window.addMember = function() {
+      const userEl = document.getElementById('inp-user');
+      const roleEl = document.getElementById('inp-role');
+      if (!userEl || !roleEl) return;
+
+      const username = userEl.value.trim();
+      const role = roleEl.value;
+      if (!username) { alert('Ingresa un nombre de usuario.'); return; }
+      
+      const newMember = { id: "m_" + Date.now(), username, role, pjs: [] };
+      
+      updateDoc(doc(db, "guild_data", "members"), {
+        list: arrayUnion(newMember)
+      }).then(() => {
+        userEl.value = '';
+      }).catch(err => alert("Error: Revisa permisos en Firestore o inicia sesión."));
+    };
+
+    window.removeMember = function(id) {
+      if (!confirm('¿Eliminar este jugador y todos sus personajes?')) return;
+      const target = window.membersList.find(m => m.id === id);
+      if (!target) return;
+
+      updateDoc(doc(db, "guild_data", "members"), {
+        list: arrayRemove(target)
+      });
+    };
+
+    window.removePJ = function(memberId, pjId) {
+      const m = window.membersList.find(m => m.id === memberId);
+      if (!m) return;
+      
+      const updatedPjs = m.pjs.filter(p => p.id !== pjId);
+      const updatedList = window.membersList.map(member => {
+        if (member.id === memberId) {
+          return { ...member, pjs: updatedPjs };
+        }
+        return member;
+      });
+
+      updateDoc(doc(db, "guild_data", "members"), { list: updatedList });
+    };
+
+    // --- MODAL PJ ---
+    window.openPJModal = function(memberId) {
+      window.editingMemberId = memberId;
+      window.tempOficios = [];
+      
+      const nameEl = document.getElementById('pj-name');
+      const lvlEl = document.getElementById('pj-level');
+      const tagsEl = document.getElementById('pj-oficios-tags');
+      const titleEl = document.getElementById('pjModalTitle');
+      
+      if (nameEl) nameEl.value = '';
+      if (lvlEl) lvlEl.value = '1';
+      if (tagsEl) tagsEl.innerHTML = '';
+      
+      const m = window.membersList.find(m => m.id === memberId);
+      if (titleEl && m) titleEl.textContent = 'Agregar PJ para ' + m.username;
+      
+      const pm = document.getElementById('pjModal');
+      if (pm) pm.classList.add('open');
+    };
+
+    window.closePJModal = function() {
+      const pm = document.getElementById('pjModal');
+      if (pm) pm.classList.remove('open');
+      window.editingMemberId = null;
+    };
+
+    window.addOficioTag = function() {
+      const sel = document.getElementById('pj-oficio-select');
+      if (!sel || !sel.value) return;
+      const [name, type] = sel.value.split('|');
+      if (window.tempOficios.find(o => o.name === name)) return;
+      window.tempOficios.push({ name, type });
+      window.renderOficioTags();
+    };
+
+    window.renderOficioTags = function() {
+      const container = document.getElementById('pj-oficios-tags');
+      if (!container) return;
+      container.innerHTML = window.tempOficios.map((o, i) =>
+        `<span class="selected-oficio" onclick="window.removeOficioTag(${i})" title="Quitar">${o.name} ×</span>`
+      ).join('');
+    };
+
+    window.removeOficioTag = function(i) {
+      window.tempOficios.splice(i, 1);
+      window.renderOficioTags();
+    };
+
+    window.savePJ = function() {
+      const nameEl = document.getElementById('pj-name');
+      const clsEl = document.getElementById('pj-class');
+      const lvlEl = document.getElementById('pj-level');
+      
+      if (!nameEl || !clsEl || !lvlEl) return;
+
+      const name = nameEl.value.trim();
+      const cls  = clsEl.value;
+      const level = parseInt(lvlEl.value) || 1;
+      if (!name) { alert('Ingresa el nombre del personaje.'); return; }
+      
+      const updatedList = window.membersList.map(member => {
+        if (member.id === window.editingMemberId) {
+          const pjs = member.pjs || [];
+          const newPj = { id: "pj_" + Date.now(), name, cls, level, oficios: [...window.tempOficios] };
+          return { ...member, pjs: [...pjs, newPj] };
+        }
+        return member;
+      });
+
+      updateDoc(doc(db, "guild_data", "members"), { list: updatedList })
+        .then(() => window.closePJModal());
+    };
+
+    // --- CALENDAR ---
+    window.renderCalendar = function() {
+      const label = document.getElementById('calMonthLabel');
+      if (label) label.textContent = window.MONTHS[window.currentMonth] + ' ' + window.currentYear;
+
+      const wdays = document.getElementById('calWeekdays');
+      if (wdays) wdays.innerHTML = window.WEEKDAYS.map(d => `<div class="weekday-label">${d}</div>`).join('');
+
+      const grid = document.getElementById('calGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      const firstDay = new Date(window.currentYear, window.currentMonth, 1).getDay();
+      const daysInMonth = new Date(window.currentYear, window.currentMonth + 1, 0).getDate();
+      const today = new Date();
+
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'cal-day empty';
+        grid.appendChild(empty);
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateKey = `${window.currentYear}-${String(window.currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const events = window.eventsData[dateKey] || [];
+        const isToday = today.getFullYear() === window.currentYear && today.getMonth() === window.currentMonth && today.getDate() === d;
+
+        const cell = document.createElement('div');
+        cell.className = 'cal-day' + (isToday ? ' today' : '') + (events.length ? ' has-event' : '');
+        cell.innerHTML = `<div class="day-num">${d}</div>` +
+          events.map(e => `<div class="day-event event-${e.type}">${e.desc}</div>`).join('');
+        grid.appendChild(cell);
+      }
+      updateStatsOnly();
+    };
+
+    window.changeMonth = function(dir) {
+      window.currentMonth += dir;
+      if (window.currentMonth < 0)  { window.currentMonth = 11; window.currentYear--; }
+      if (window.currentMonth > 11) { window.currentMonth = 0;  window.currentYear++; }
+      window.renderCalendar();
+    };
+
+    window.addEvent = function() {
+      const dayEl = document.getElementById('inp-evDay');
+      const typeEl = document.getElementById('inp-evType');
+      const descEl = document.getElementById('inp-evDesc');
+      
+      if (!dayEl || !typeEl || !descEl) return;
+
+      const day  = parseInt(dayEl.value);
+      const type = typeEl.value;
+      const desc = descEl.value.trim();
+      if (!day || !desc) { alert('Completa el día y la descripción.'); return; }
+      
+      const dateKey = `${window.currentYear}-${String(window.currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      
+      const currentSchedule = { ...window.eventsData };
+      if (!currentSchedule[dateKey]) currentSchedule[dateKey] = [];
+      currentSchedule[dateKey].push({ desc, type });
+
+      updateDoc(doc(db, "guild_data", "events"), { schedule: currentSchedule })
+        .then(() => {
+          dayEl.value = '';
+          descEl.value = '';
+        });
+    };
+
+    // --- SETTINGS ---
+    window.saveSettings = function() {
+      const nameEl = document.getElementById('set-name');
+      const lvlEl = document.getElementById('set-level');
+      const srvEl = document.getElementById('set-server');
+      const descEl = document.getElementById('set-desc');
+
+      const name = nameEl ? nameEl.value.trim() : window.guildData.name;
+      const level = lvlEl ? (parseInt(lvlEl.value) || window.guildData.level) : window.guildData.level;
+      const server = srvEl ? srvEl.value.trim() : window.guildData.server;
+      const desc = descEl ? descEl.value.trim() : window.guildData.desc;
+
+      updateDoc(doc(db, "guild_config", "los-perversos"), { name, level, server, desc })
+        .then(() => alert('Configuración global guardada en Firestore.'));
+    };
+
+    function renderGuildHeader() {
+      const titleContainer = document.getElementById('guildName');
+      if (titleContainer && window.guildData.name) {
+        if (window.guildData.name.includes('-')) {
+          titleContainer.innerHTML = `${window.guildData.name.split('-')[0]}-<span>${window.guildData.name.split('-')[1]}</span>`;
+        } else {
+          titleContainer.textContent = window.guildData.name;
+        }
+      }
+      const gs = document.getElementById('guildServer');
+      const gd = document.getElementById('guildDesc');
+      if (gs) gs.textContent = `Servidor: ${window.guildData.server || '--'} | Nivel de gremio: ${window.guildData.level || '--'}`;
+      if (gd) gd.textContent = window.guildData.desc || '';
+    }
+
+    function fillGuildSettingsForm() {
+      const el = document.getElementById('set-name');
+      const lvlEl = document.getElementById('set-level');
+      const srvEl = document.getElementById('set-server');
+      const descEl = document.getElementById('set-desc');
+
+      if (el) el.value = window.guildData.name || '';
+      if (lvlEl) lvlEl.value = window.guildData.level || 1;
+      if (srvEl) srvEl.value = window.guildData.server || '';
+      if (descEl) descEl.value = window.guildData.desc || '';
+    }
+
+    function updateStatsOnly() {
+      const su = document.getElementById('statUsers');
+      const sp = document.getElementById('statPJs');
+      const se = document.getElementById('statEvents');
+      
+      if (su) su.textContent = window.membersList.length;
+      if (sp) sp.textContent = window.membersList.reduce((a,m) => a + (m.pjs ? m.pjs.length : 0), 0);
+      
+      if (se) {
+        const monthKey = `${window.currentYear}-${String(window.currentMonth+1).padStart(2,'0')}`;
+        const evCount = Object.keys(window.eventsData).filter(k => k.startsWith(monthKey)).reduce((a, k) => a + window.eventsData[k].length, 0);
+        se.textContent = evCount;
+      }
+    }
+  </script>
 </body>
 </html>
