@@ -185,28 +185,32 @@
     </div>
   </div>
 
-  <!-- SECCIÓN CONFIGURACIÓN (Sólo Admin) -->
-  <div id="sec-settings" class="section admin-only">
-    <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border); max-width: 500px;">
-      <h3 style="margin-bottom: 1rem;">Ajustes Globales del Gremio</h3>
-      <div class="form-group">
-        <label>Nombre del Gremio (Usa un guion '-' para estilizar en dos colores)</label>
-        <input type="text" id="set-name">
-      </div>
-      <div class="form-group">
-        <label>Servidor</label>
-        <input type="text" id="set-server">
-      </div>
-      <div class="form-group">
-        <label>Nivel de Gremio</label>
-        <input type="number" id="set-level">
-      </div>
-      <div class="form-group">
-        <label>Descripción / Mensaje del Día</label>
-        <textarea id="set-desc" rows="3"></textarea>
-      </div>
-      <button class="btn" onclick="saveSettings()">Guardar en la Nube</button>
+  <!-- Formulario de Configuración del Gremio -->
+  <div id="sec-settings" class="section">
+    <h2>Configuración del Gremio</h2>
+    <div class="form-group">
+      <label for="set-name">Nombre del Gremio:</label>
+      <input type="text" id="set-name" class="form-input" placeholder="Ej: Los-Perversos">
     </div>
+  
+    <div class="form-group">
+      <label for="set-level">Nivel del Gremio:</label>
+      <input type="number" id="set-level" class="form-input" placeholder="Ej: 1">
+    </div>
+  
+    <div class="form-group">
+      <label for="set-server">Servidor:</label>
+      <input type="text" id="set-server" class="form-input" placeholder="Ej: Rubilax">
+    </div>
+  
+    <div class="form-group">
+      <label for="set-desc">Descripción / Anuncio:</label>
+      <textarea id="set-desc" class="form-input" rows="4" placeholder="Escribe el anuncio del gremio aquí..."></textarea>
+    </div>
+
+    <!-- El botón DEBE tener la clase admin-only para que solo tú lo veas al loguearte, 
+         y debe llamar a la función window.saveSettings() -->
+    <button class="btn btn-primary admin-only" onclick="window.saveSettings()">Guardar Configuración</button>
   </div>
 
 </div>
