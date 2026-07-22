@@ -140,7 +140,7 @@
                 let { data: configData, error: configError } = await supabase
                     .from('guild_config')
                     .select('*')
-                    .eq('id', 'los-perversos')
+                    .eq('id', '1')
                     .maybeSingle(); // Usamos maybeSingle en lugar de single para evitar el error 406 si no existe
                 
                 if (configError) {
@@ -149,7 +149,7 @@
                 
                 if (!configData) {
                     console.log("[DEBUG] El registro no existe en Supabase. Creando plantilla...");
-                    const plantillaConfig = { id: 'los-perversos', name: 'asd', level: 123, server: 'asd', desc: '' };
+                    const plantillaConfig = { id: '1', name: 'Los-Perversos', level: 108, server: 'Talok', desc: '' };
                     await supabase.from('guild_config').insert([plantillaConfig]);
                     renderConfig(plantillaConfig);
                 } else {
