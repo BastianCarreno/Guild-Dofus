@@ -514,7 +514,7 @@
       </svg>
     </div>
     <h1 class="guild-name" id="guildName">Los-<span>Perversos</span></h1>
-    <p class="guild-subtitle" id="guildServer">Servidor: Talok | Nivel de gremio: 108</p>
+    <p class="guild-subtitle" id="guildServer">Servidor: Mono | Nivel de gremio: 42</p>
     <p class="guild-description" id="guildDesc">
       "Buscamos el poder en cada rincón de las Doce Tierras. El fin justifica los medios."
     </p>
@@ -632,13 +632,13 @@
         </div>
         <div class="form-field">
           <label class="form-label">Nivel del gremio</label>
-          <input class="form-input" id="set-level" value="108" type="number" />
+          <input class="form-input" id="set-level" value="42" type="number" />
         </div>
       </div>
       <div class="form-row">
         <div class="form-field">
           <label class="form-label">Servidor</label>
-          <input class="form-input" id="set-server" value="Talok" />
+          <input class="form-input" id="set-server" value="Mono" />
         </div>
       </div>
       <div class="form-row">
@@ -653,89 +653,85 @@
     <div class="divider"><span class="divider-icon">◆</span></div>
     <div class="section-title">Sincronización en la Nube</div>
     <div class="form-panel" style="font-size:0.9rem; color:var(--text-muted); line-height:1.8;">
-      <p>Este panel está sincronizado directamente con <strong style="color:var(--green-bright)">Supabase Cloud</strong>. Cualquier actualización realizada se guardará inmediatamente en tu base de datos global.</p>
+      <p>Este panel está sincronizado directamente con tu base de datos en <strong style="color:var(--green-bright)">Supabase</strong>. Todos los cambios se reflejan en tiempo real para todos los miembros.</p>
     </div>
-  </section></div>
-
-  <!-- MODAL: Agregar personaje -->
-  <div class="modal-overlay" id="pjModal">
-    <div class="modal">
-      <div class="modal-title" id="pjModalTitle">Agregar personaje</div>
-      <div class="form-row">
+  </section></div><!-- MODAL: Agregar personaje --><div class="modal-overlay" id="pjModal">
+  <div class="modal">
+    <div class="modal-title" id="pjModalTitle">Agregar personaje</div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Nombre del PJ</label>
+        <input class="form-input" id="pj-name" placeholder="Ej: Xaroken" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Clase</label>
+        <select class="form-select" id="pj-class">
+          <option>Yopuka</option><option>Cra</option><option>Ecaflip</option>
+          <option>Eniripsa</option><option>Feca</option><option>Osamodas</option><option>Pandawa</option>
+          <option>Sadida</option><option>Sacrógrito</option><option>Sram</option><option>Xelor</option>
+          <option>Tymador</option><option>Zúbal</option><option>Hiperago</option><option>Oginak</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Nivel</label>
+        <input class="form-input" id="pj-level" type="number" min="1" max="200" placeholder="200" />
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <div class="form-label" style="margin-bottom:0.5rem">Oficios</div>
+      <div class="form-row" style="margin-bottom:0.5rem">
         <div class="form-field">
-          <label class="form-label">Nombre del PJ</label>
-          <input class="form-input" id="pj-name" placeholder="Ej: Xaroken" />
-        </div>
-        <div class="form-field">
-          <label class="form-label">Clase</label>
-          <select class="form-select" id="pj-class">
-            <option>Yopuka</option><option>Cra</option><option>Ecaflip</option>
-            <option>Eniripsa</option><option>Feca</option><option>Osamodas</option><option>Pandawa</option>
-            <option>Sadida</option><option>Sacrógrito</option><option>Sram</option><option>Xelor</option>
-            <option>Tymador</option><option>Zúbal</option><option>Hiperago</option><option>Oginak</option>
+          <select class="form-select" id="pj-oficio-select">
+            <optgroup label="Recolección">
+              <option value="Granjero|harvest">Granjero</option>
+              <option value="Leñador|harvest">Leñador</option>
+              <option value="Minero|harvest">Minero</option>
+              <option value="Pescador|harvest">Pescador</option>
+              <option value="Alquimista|harvest">Alquimista</option>
+              <option value="Cazador|harvest">Cazador</option>
+            </optgroup>
+            <optgroup label="Artesanías">
+              <option value="Forjador|craft">Forjador</option>
+              <option value="Escultor|craft">Escultor</option>
+              <option value="Sastre|craft">Sastre</option>
+              <option value="Zapatero|craft">Zapatero</option>
+              <option value="Joyero|craft">Joyero</option>
+              <option value="Manitas|craft">Manitas</option>
+              <option value="Conductor|craft">Conductor de Mágia</option>
+            </optgroup>
           </select>
         </div>
-      </div>
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Nivel</label>
-          <input class="form-input" id="pj-level" type="number" min="1" max="200" placeholder="200" />
+        <div style="display:flex; align-items:flex-end;">
+          <button class="btn btn-outline" onclick="window.addOficioTag()">Agregar</button>
         </div>
       </div>
-      <div style="margin-bottom:1rem">
-        <div class="form-label" style="margin-bottom:0.5rem">Oficios</div>
-        <div class="form-row" style="margin-bottom:0.5rem">
-          <div class="form-field">
-            <select class="form-select" id="pj-oficio-select">
-              <optgroup label="Recolección">
-                <option value="Granjero|harvest">Granjero</option>
-                <option value="Leñador|harvest">Leñador</option>
-                <option value="Minero|harvest">Minero</option>
-                <option value="Pescador|harvest">Pescador</option>
-                <option value="Alquimista|harvest">Alquimista</option>
-                <option value="Cazador|harvest">Cazador</option>
-              </optgroup>
-              <optgroup label="Artesanías">
-                <option value="Forjador|craft">Forjador</option>
-                <option value="Escultor|craft">Escultor</option>
-                <option value="Sastre|craft">Sastre</option>
-                <option value="Zapatero|craft">Zapatero</option>
-                <option value="Joyero|craft">Joyero</option>
-                <option value="Manitas|craft">Manitas</option>
-                <option value="Conductor|craft">Conductor de Mágia</option>
-              </optgroup>
-            </select>
-          </div>
-          <div style="display:flex; align-items:flex-end;">
-            <button class="btn btn-outline" onclick="window.addOficioTag()">Agregar</button>
-          </div>
-        </div>
-        <div class="tag-list" id="pj-oficios-tags"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" onclick="window.closePJModal()">Cancelar</button>
-        <button class="btn btn-gold" onclick="window.savePJ()">Guardar PJ</button>
-      </div>
+      <div class="tag-list" id="pj-oficios-tags"></div>
     </div>
-  </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="window.closePJModal()">Cancelar</button>
+      <button class="btn btn-gold" onclick="window.savePJ()">Guardar PJ</button>
+    </div>
+  </div></div>
 
-  <!-- SCRIPT INTEGRADO DE SUPABASE Y LÓGICA DE LA APP -->
+  <!-- SCRIPT INTEGRADO CON SUPABASE -->
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-    // Configuración de Supabase del proyecto
+    // Cliente de Supabase
     const SUPABASE_URL = 'https://mvhbzwcflcddtqiwljsf.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_5eh73ojnkKuMnYWv06REfA_dUL2ZvlW';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Estado local sincronizado
+    // Estado global de la aplicación
     let membersList = [];
     let eventsList = [];
     let activeUserIndex = null;
     let tempOficios = [];
     let currentDate = new Date();
 
-    // Navegación de pestañas
+    // Navegación
     window.showSection = function(secId, btnEl) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -743,46 +739,50 @@
       btnEl.classList.add('active');
     };
 
-    // --- INICIALIZAR DESDE SUPABASE ---
-    async function inicializarAplicacion() {
+    // Cargar datos desde Supabase
+    async function loadFromSupabase() {
       try {
-        // 1. Cargar Configuración del Gremio
+        // 1. Cargar Configuración (guild_config con id = '1')
         let { data: configData } = await supabase
           .from('guild_config')
           .select('*')
           .eq('id', '1')
           .maybeSingle();
 
-        if (!configData) {
-          const plantillaConfig = { id: '1', name: 'Los-Perversos', level: 108, server: 'Talok', desc: 'Buscamos el poder en cada rincón de las Doce Tierras. El fin justifica los medios.' };
-          await supabase.from('guild_config').insert([plantillaConfig]);
-          renderConfig(plantillaConfig);
-        } else {
+        if (configData) {
           renderConfig(configData);
+        } else {
+          const defaultConfig = { id: '1', name: 'Los-Perversos', level: 42, server: 'Mono', desc: 'Buscamos el poder en cada rincón de las Doce Tierras. El fin justifica los medios.' };
+          await supabase.from('guild_config').insert([defaultConfig]);
+          renderConfig(defaultConfig);
         }
 
-        // 2. Cargar Miembros y Eventos
+        // 2. Cargar Miembros (guild_data con id = 'members')
         let { data: membersData } = await supabase
           .from('guild_data')
           .select('*')
           .eq('id', 'members')
           .maybeSingle();
 
-        if (!membersData) {
-          const plantillaMiembros = {
-            id: 'members',
-            lista: [
-              { user: 'Líder_Fundador', role: 'leader', pjs: [{ name: 'LiderPj', class: 'Yopuka', level: 200, oficios: [{ name: 'Forjador', type: 'craft' }] }] }
-            ],
-            eventos: [],
-            total: 1
-          };
-          await supabase.from('guild_data').insert([plantillaMiembros]);
-          membersList = plantillaMiembros.lista;
-          eventsList = plantillaMiembros.eventos || [];
-        } else {
+        if (membersData) {
           membersList = membersData.lista || [];
-          eventsList = membersData.eventos || [];
+        } else {
+          membersList = [];
+          await supabase.from('guild_data').insert([{ id: 'members', lista: [], total: 0 }]);
+        }
+
+        // 3. Cargar Eventos (guild_data con id = 'events')
+        let { data: eventsData } = await supabase
+          .from('guild_data')
+          .select('*')
+          .eq('id', 'events')
+          .maybeSingle();
+
+        if (eventsData) {
+          eventsList = eventsData.lista || [];
+        } else {
+          eventsList = [];
+          await supabase.from('guild_data').insert([{ id: 'events', lista: [], total: 0 }]);
         }
 
         renderMembers();
@@ -790,18 +790,19 @@
         updateStats();
 
       } catch (err) {
-        console.error("Error al inicializar con Supabase:", err);
+        console.error("Error al sincronizar con Supabase:", err);
       }
     }
 
+    // Renderizar Configuración
     function renderConfig(data) {
       const nameParts = (data.name || 'Los-Perversos').split('-');
       document.getElementById('guildName').innerHTML = `${nameParts[0]}-<span>${nameParts[1] || ''}</span>`;
-      document.getElementById('guildServer').innerText = `Servidor: ${data.server || 'Talok'} | Nivel de gremio: ${data.level || 108}`;
+      document.getElementById('guildServer').innerText = `Servidor: ${data.server || 'Mono'} | Nivel de gremio: ${data.level || 42}`;
       document.getElementById('guildDesc').innerText = `"${data.desc || ''}"`;
 
       document.getElementById('set-name').value = data.name || '';
-      document.getElementById('set-level').value = data.level || 108;
+      document.getElementById('set-level').value = data.level || 42;
       document.getElementById('set-server').value = data.server || '';
       document.getElementById('set-desc').value = data.desc || '';
     }
@@ -819,25 +820,33 @@
       const { error } = await supabase.from('guild_config').upsert(payload);
       if (!error) {
         renderConfig(payload);
-        alert("¡Configuración del gremio guardada con éxito!");
+        alert("¡Configuración guardada correctamente en Supabase!");
       } else {
         alert("Error al guardar la configuración.");
       }
     };
 
-    // Sincronizar Miembros y Eventos
-    async function syncGuildData() {
-      const payload = {
+    // Guardar Miembros en Supabase
+    async function saveMembersData() {
+      await supabase.from('guild_data').upsert({
         id: 'members',
         lista: membersList,
-        eventos: eventsList,
         total: membersList.length
-      };
-      await supabase.from('guild_data').upsert(payload);
+      });
       updateStats();
     }
 
-    // --- MIEMBROS Y PERSONAJES ---
+    // Guardar Eventos en Supabase
+    async function saveEventsData() {
+      await supabase.from('guild_data').upsert({
+        id: 'events',
+        lista: eventsList,
+        total: eventsList.length
+      });
+      updateStats();
+    }
+
+    // Renderizar Miembros
     function renderMembers() {
       const grid = document.getElementById('membersGrid');
       grid.innerHTML = '';
@@ -867,7 +876,7 @@
               </div>`;
           }).join('');
         } else {
-          pjsHtml = '<p style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">Sin personajes agregados.</p>';
+          pjsHtml = '<p style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">Sin personajes registrados.</p>';
         }
 
         const card = document.createElement('div');
@@ -899,18 +908,18 @@
       membersList.push({ user, role, pjs: [] });
       document.getElementById('inp-user').value = '';
       renderMembers();
-      await syncGuildData();
+      await saveMembersData();
     };
 
     window.removeMember = async function(idx) {
       if (confirm("¿Estás seguro de eliminar a este jugador y todos sus personajes?")) {
         membersList.splice(idx, 1);
         renderMembers();
-        await syncGuildData();
+        await saveMembersData();
       }
     };
 
-    // --- MODAL DE PERSONAJES ---
+    // Modal Personajes
     window.openPJModal = function(idx) {
       activeUserIndex = idx;
       tempOficios = [];
@@ -957,16 +966,16 @@
 
       window.closePJModal();
       renderMembers();
-      await syncGuildData();
+      await saveMembersData();
     };
 
     window.removePJ = async function(mIdx, pjIdx) {
       membersList[mIdx].pjs.splice(pjIdx, 1);
       renderMembers();
-      await syncGuildData();
+      await saveMembersData();
     };
 
-    // --- CALENDARIO / ALMANAX ---
+    // Almanax / Calendario
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
     function renderCalendar() {
@@ -1027,10 +1036,10 @@
       document.getElementById('inp-evDesc').value = '';
 
       renderCalendar();
-      await syncGuildData();
+      await saveEventsData();
     };
 
-    // Estaddísticas Rápidas
+    // Estadísticas del Hero
     function updateStats() {
       document.getElementById('statUsers').innerText = membersList.length;
       let totalPJs = 0;
@@ -1041,8 +1050,8 @@
       document.getElementById('statEvents').innerText = currentMonthEvs.length;
     }
 
-    // Inicializar App
-    inicializarAplicacion();
+    // Cargar datos
+    loadFromSupabase();
   </script>
 </body>
 </html>
