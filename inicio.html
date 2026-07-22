@@ -140,13 +140,13 @@
                 let { data: configData, error: configError } = await supabase
                     .from('guild_config')
                     .select('*')
-                    .eq('id', 'los-perversos')
+                    .eq('id', '1')
                     .single();
 
                 // Si no existe el registro, creamos la fila inicial por defecto
                 if (configError || !configData) {
                     console.log("[DEBUG] El registro no existe en Supabase. Creando plantilla...");
-                    const plantillaConfig = { id: 'los-perversos', name: 'asd', level: 123, server: 'asd', desc: '' };
+                    const plantillaConfig = { id: '1', name: 'asd', level: 123, server: 'asd', desc: '' };
                     await supabase.from('guild_config').insert([plantillaConfig]);
                     renderConfig(plantillaConfig);
                 } else {
