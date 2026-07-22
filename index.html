@@ -850,25 +850,31 @@
     function renderMembers() {
       const grid = document.getElementById('membersGrid');
       grid.innerHTML = '';
-
+    
       membersList.forEach((m, idx) => {
-        const initial = m.user.charAt(0).toUpperCase();
+        // Validar que exista un objeto de miembro válido
+        if (!m) return;
+    
+        // Asegurar que exista 'user' para evitar el error de charAt
+        const userName = m.user || 'Sin nombre';
+        const initial = userName.charAt(0).toUpperCase();
+        
         const roleClass = m.role === 'leader' ? 'role-leader' : m.role === 'officer' ? 'role-officer' : 'role-member';
         const roleLabel = m.role === 'leader' ? 'Líder' : m.role === 'officer' ? 'Oficial' : 'Miembro';
-
+    
         let pjsHtml = '';
-        if (m.pjs && m.pjs.length > 0) {
+        if (m.pjs && Array.isArray(m.pjs) && m.pjs.length > 0) {
           pjsHtml = m.pjs.map((pj, pjIdx) => {
             const oficiosHtml = pj.oficios ? pj.oficios.map(o => `<span class="oficio-tag oficio-${o.type}">${o.name}</span>`).join('') : '';
             return `
               <div class="pj-item">
                 <div class="pj-header">
                   <div>
-                    <span class="pj-name">${pj.name}</span>
-                    <span class="pj-class">• ${pj.class}</span>
+                    <span class="pj-name">${pj.name || 'Sin nombre'}</span>
+                    <span class="pj-class">• ${pj.class || 'Clase'}</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span class="pj-level">Nv. ${pj.level}</span>
+                    <span class="pj-level">Nv. ${pj.level || 1}</span>
                     <button class="btn-danger" onclick="window.removePJ(${idx}, ${pjIdx})">✕</button>
                   </div>
                 </div>
@@ -878,13 +884,13 @@
         } else {
           pjsHtml = '<p style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">Sin personajes registrados.</p>';
         }
-
+    
         const card = document.createElement('div');
         card.className = 'member-card';
         card.innerHTML = `
           <div class="member-header" onclick="this.parentElement.classList.toggle('open')">
             <div class="member-avatar">${initial}</div>
-            <div class="member-name">${m.user}</div>
+            <div class="member-name">${userName}</div>
             <span class="member-role ${roleClass}">${roleLabel}</span>
             <span class="expand-icon">▼</span>
           </div>
