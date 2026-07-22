@@ -135,35 +135,41 @@
          */
         async function inicializarAplicacion() {
             try {
-                // --- 1. LEER CONFIGURACIÓN DE LA GUILD ---
+                                // --- 1. LEER CONFIGURACIÓN DE LA GUILD ---
                 console.log("[DEBUG] Solicitando registro guild_config/los-perversos...");
                 let { data: configData, error: configError } = await supabase
                     .from('guild_config')
                     .select('*')
-                    .eq('id', '1')
-                    .single();
-
-                // Si no existe el registro, creamos la fila inicial por defecto
-                if (configError || !configData) {
+                    .eq('id', 'los-perversos')
+                    .maybeSingle(); // Usamos maybeSingle en lugar de single para evitar el error 406 si no existe
+                
+                if (configError) {
+                    console.error("[ERROR Config]", configError);
+                }
+                
+                if (!configData) {
                     console.log("[DEBUG] El registro no existe en Supabase. Creando plantilla...");
-                    const plantillaConfig = { id: '1', name: 'asd', level: 123, server: 'asd', desc: '' };
+                    const plantillaConfig = { id: 'los-perversos', name: 'asd', level: 123, server: 'asd', desc: '' };
                     await supabase.from('guild_config').insert([plantillaConfig]);
                     renderConfig(plantillaConfig);
                 } else {
                     console.log("[DEBUG] Datos de configuración cargados.");
                     renderConfig(configData);
                 }
-
+                
                 // --- 2. LEER DATOS DE MIEMBROS ---
                 console.log("[DEBUG] Solicitando registro guild_data/members...");
                 let { data: membersData, error: membersError } = await supabase
                     .from('guild_data')
                     .select('*')
                     .eq('id', 'members')
-                    .single();
-
-                // Si no existe el registro de miembros, lo inicializamos vacío
-                if (membersError || !membersData) {
+                    .maybeSingle(); // También usamos maybeSingle aquí
+                
+                if (membersError) {
+                    console.error("[ERROR Members]", membersError);
+                }
+                
+                if (!membersData) {
                     console.log("[DEBUG] El registro de miembros no existe. Inicializando...");
                     const plantillaMiembros = { 
                         id: 'members',
