@@ -16,7 +16,7 @@ app.add_middleware(
 
 @app.get("/profile/{profile_name}")
 def get_profile(profile_name: str):
-    url = f"https://ankama.com{profile_name}"
+    url = f"https://account.ankama.com/en/ankama-profile/{profile_name}"
     
     try:
         # Usamos curl_cffi para suplantar la firma exacta de Chrome 120
