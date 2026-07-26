@@ -1,63 +1,53 @@
-import os
+import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 
 app = FastAPI(title="Ankama Profile Scraper API")
 
-# Habilitamos CORS de forma global para tu GitHub Pages
+# Cabeceras CORS configuradas correctamente
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://bastiancarreno.github.io", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Render te permite guardar variables secretas de entorno. Aquí cargamos tu token de Browserless
-BROWSER_URL = os.getenv("BROWSER_URL")
-
-async def scrape_ankama_profile(profile_name: str):
+@app.get("/profile/{profile_name}")
+async def get_profile(profile_name: str):
     url = f"https://account.ankama.com/en/ankama-profile/{profile_name}"
     
-    if not BROWSER_URL:
-        raise HTTPException(status_code=500, detail="Falta configurar la variable BROWSER_URL en Render.")
-        
-    async with async_playwright() as p:
-        # CORRECCIÓN: Usamos connect_over_cdp para que sea 100% compatible con Browserless
+    # Headers optimizados para evitar bloqueos simulando un navegador orgánico
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
+    }
+    
+    # Realizamos la petición HTTP asíncrona directa sin navegadores pesados
+    async with httpx.AsyncClient(follow_redirects=True, timeout=15.0) as client:
         try:
-            browser = await p.chromium.connect_over_cdp(BROWSER_URL)
-        except Exception as conn_error:
-            raise HTTPException(status_code=500, detail=f"Error de conexión con el navegador en la nube: {str(conn_error)}")
+            response = await client.get(url, headers=headers)
+            if response.status_code == 404:
+                raise HTTPException(status_code=404, detail="El perfil de Ankama especificado no existe.")
+            elif response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail=f"Ankama respondió con estado: {response.status_code}")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=500, detail=f"Error de conexión con Ankama: {str(exc)}")
 
-        # Nota: connect_over_cdp ya trae un contexto por defecto del navegador remoto,
-        # pero para inyectar el User-Agent limpio de Cloudflare, forzamos un contexto nuevo.
-        context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
-        page = await context.new_page()
-        
-        try:
-            # Añadimos un tiempo límite (timeout) de 30 segundos por si Cloudflare se tarda
-            await page.goto(url, wait_until="domcontentloaded", timeout=30000)
-            
-            # Le damos 4 segundos en el navegador remoto para renderizar el Javascript de Ankama
-            await asyncio.sleep(4) 
-            
-            html_content = await page.content()
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error al extraer los datos de la página: {str(e)}")
-        finally:
-            await context.close()
-            await browser.close()
-            
-    soup = BeautifulSoup(html_content, "html.parser")
+    # Procesamos el HTML obtenido
+    soup = BeautifulSoup(response.text, "html.parser")
     all_td_elements = soup.find_all("td")
     
     if not all_td_elements:
         title = soup.title.string if soup.title else "Sin título"
-        raise HTTPException(status_code=404, detail=f"No se encontraron personajes. Página: {title}")
+        # Si Cloudflare nos frena, lo sabremos por el título de la página
+        if "Cloudflare" in title or "Just a moment" in title:
+            raise HTTPException(status_code=403, detail="La solicitud fue interceptada por Cloudflare. Inténtalo más tarde.")
+        raise HTTPException(status_code=404, detail=f"No se encontraron personajes en este perfil. Título: {title}")
         
     td_texts = [td.get_text(strip=True) for td in all_td_elements]
     
@@ -73,13 +63,7 @@ async def scrape_ankama_profile(profile_name: str):
                 "guild": row[4]
             })
             
-    return characters
-
-
-@app.get("/profile/{profile_name}")
-async def get_profile(profile_name: str):
-    data = await scrape_ankama_profile(profile_name)
-    return {"profile": profile_name, "characters": data}
+    return {"profile": profile_name, "characters": characters}
 
 @app.get("/")
 def home():
