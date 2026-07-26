@@ -1,140 +1,435 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ankama Profile Scraper Client</title>
-    <!-- Estilos rápidos y modernos usando un CDN de CSS -->
-    <link rel="stylesheet" href="https://jsdelivr.net">
-    <style>
-        .container { max-width: 900px; margin-top: 2rem; }
-        .hidden { display: none; }
-        .error-box { background-color: #ffdddd; color: #900; padding: 1rem; border-radius: 4px; margin-bottom: 1rem; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 1rem auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ankama Profile Scraper Client</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --green-bright: #20df60;
+      --green-mid: #15a845;
+      --green-dark: #0b4f21;
+      --black-deep: #050505;
+      --black-card: #0d110e;
+      --black-light: #161c18;
+      --border-color: #1f2c23;
+      --text-main: #e2e8f0;
+      --text-muted: #85998b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--black-deep);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* --- SCROLLBAR --- */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--black-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--green-mid); }
+
+    /* --- BACKGROUND TEXTURE --- */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(32, 223, 96, 0.05) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 90%, rgba(21, 168, 69, 0.03) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    #app { position: relative; z-index: 1; }
+
+    /* --- ORNAMENTAL DIVIDER --- */
+    .divider {
+      display: flex; align-items: center; gap: 1rem;
+      margin: 3rem 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border-color), transparent);
+    }
+    .divider-icon {
+      color: var(--green-mid);
+      font-size: 1rem;
+      opacity: 0.5;
+    }
+
+    /* --- HEADER / HERO --- */
+    .hero {
+      position: relative;
+      padding: 4rem 1.5rem 3rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(180deg, rgba(32, 223, 96, 0.03) 0%, transparent 100%);
+    }
+
+    .hero-emblem {
+      width: 100px; height: 100px;
+      border-radius: 24px;
+      border: 2px solid var(--green-dark);
+      box-shadow: 0 0 30px rgba(32, 223, 96, 0.05);
+      margin: 0 auto 1.5rem;
+      background: var(--black-card);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+      transform: rotate(45deg);
+      transition: all 0.4s ease;
+    }
+    .hero-emblem:hover {
+      transform: rotate(45deg) scale(1.05);
+      border-color: var(--green-bright);
+      box-shadow: 0 0 40px rgba(32, 223, 96, 0.2);
+    }
+    .hero-emblem svg { transform: rotate(-45deg); width: 50px; height: 50px; }
+
+    .guild-name {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 30px rgba(32, 223, 96, 0.3), 0 2px 8px rgba(0,0,0,0.9);
+      letter-spacing: -0.02em;
+      position: relative; z-index: 1;
+    }
+    .guild-name span { color: var(--green-bright); }
+    .guild-subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 0.5rem;
+    }
+    .guild-description {
+      max-width: 580px;
+      margin: 1.5rem auto 0;
+      color: #a3b8aa;
+      font-style: italic;
+      font-size: 1rem;
+    }
+
+    /* --- SECTIONS --- */
+    .section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.12em;
+      margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1; height: 1px;
+      background: linear-gradient(to right, var(--border-color), transparent);
+    }
+
+    /* --- FORM STYLING --- */
+    .form-panel {
+      background: var(--black-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    .form-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .form-field { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; min-width: 220px; }
+    .form-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.05rem;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .form-input, .form-select {
+      background: var(--black-deep);
+      border: 1px solid var(--border-color);
+      color: #ffffff;
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      outline: none;
+      width: 100%;
+    }
+    .form-input::placeholder { color: #4b5a4f; }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--green-bright);
+      box-shadow: 0 0 10px rgba(32, 223, 96, 0.1);
+    }
+    .form-input:disabled, .form-select:disabled,
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* --- BUTTONS --- */
+    .btn {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      width: 100%;
+    }
+    .btn-gold {
+      background: var(--green-bright);
+      color: var(--black-deep);
+    }
+    .btn-gold:hover:not(:disabled) {
+      box-shadow: 0 0 20px rgba(32, 223, 96, 0.4);
+      filter: brightness(1.1);
+    }
+
+    /* --- NOTICE / ERROR --- */
+    .notice {
+      background: rgba(32, 223, 96, 0.02);
+      border: 1px solid rgba(32, 223, 96, 0.1);
+      border-left: 3px solid var(--green-bright);
+      padding: 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #a3b8aa;
+      margin-bottom: 2rem;
+    }
+
+    .error-box {
+      background: rgba(248, 113, 113, 0.06);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      border-left: 3px solid #f87171;
+      color: #f87171;
+      padding: 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin: 1.5rem 0;
+    }
+
+    .hidden { display: none !important; }
+
+    /* --- LOADER --- */
+    .loader {
+      border: 3px solid var(--border-color);
+      border-top: 3px solid var(--green-bright);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 0.9s linear infinite;
+      margin: 2rem auto;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* --- RESULTS TABLE (member-card style) --- */
+    .results-panel {
+      background: var(--black-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    thead {
+      background: linear-gradient(135deg, var(--black-light) 0%, var(--black-card) 100%);
+      border-bottom: 1px solid var(--border-color);
+    }
+    th {
+      text-align: left;
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0.85rem 1rem;
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(31, 44, 35, 0.4);
+      transition: background 0.2s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(32, 223, 96, 0.03); }
+    td {
+      padding: 0.85rem 1rem;
+      color: var(--text-main);
+    }
+    td strong { color: #ffffff; font-weight: 600; }
+
+    @media (max-width: 640px) {
+      table { font-size: 0.78rem; }
+      th, td { padding: 0.6rem 0.6rem; }
+    }
+  </style>
 </head>
 <body>
-    <main class="container">
-        <h2>Consultar Perfil de Ankama</h2>
-        
-        <!-- Formulario de Configuración y Búsqueda -->
-        <form id="apiForm" onsubmit="fetchProfile(event)">
-            <label for="apiUrl">
-                1. URL Base de tu API de Ngrok:
-                <input type="url" id="apiUrl" placeholder="https://ngrok-free.app" required>
-            </label>
-            
-            <label for="profileName">
-                2. Nombre del Perfil de Ankama:
-                <input type="text" id="profileName" placeholder="tien-2358" required>
-            </label>
-            
-            <button type="submit" id="btnSubmit">Buscar Personajes</button>
-        </form>
+<div id="app">
 
-        <!-- Indicador de Carga -->
-        <div id="loader" class="loader hidden"></div>
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-emblem">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 4L54 16V48L32 60L10 48V16L32 4Z" stroke="#20df60" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M32 14V50" stroke="#15a845" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <circle cx="32" cy="32" r="6" fill="#20df60"/>
+      </svg>
+    </div>
+    <h1 class="guild-name">Ankama <span>Profile Scraper</span></h1>
+    <p class="guild-subtitle">Cliente de consulta de perfil</p>
+    <p class="guild-description">Consulta los personajes visibles de cualquier perfil de Ankama a través de tu API.</p>
+  </header>
 
-        <!-- Caja de Errores -->
-        <div id="errorBox" class="error-box hidden"></div>
+  <!-- MAIN SECTION -->
+  <section class="section">
+    <div class="notice">
+      Ingresa la URL base de tu API (Ngrok) y el nombre del perfil de Ankama que quieres consultar.
+    </div>
 
-        <!-- Tabla de Resultados -->
-        <section id="resultsSection" class="hidden">
-            <h3>Personajes de <span id="displayProfile"></span></h3>
-            <figure>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Clase</th>
-                            <th>Nivel</th>
-                            <th>Servidor</th>
-                            <th>Gremio</th>
-                        </tr>
-                    </thead>
-                    <tbody id="charactersTableBody">
-                        <!-- Las filas se insertarán dinámicamente aquí -->
-                    </tbody>
-                </table>
-            </figure>
-        </section>
-    </main>
+    <div class="section-title">Consultar Perfil</div>
+    <div class="form-panel">
+      <form id="apiForm" onsubmit="fetchProfile(event)">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label" for="apiUrl">URL Base de tu API de Ngrok</label>
+            <input class="form-input" type="url" id="apiUrl" placeholder="https://ngrok-free.app" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label" for="profileName">Nombre del Perfil de Ankama</label>
+            <input class="form-input" type="text" id="profileName" placeholder="tien-2358" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-gold" id="btnSubmit">Buscar Personajes</button>
+      </form>
+    </div>
 
-    <script>
-        async function fetchProfile(event) {
-            event.preventDefault();
-            
-            // Captura de elementos del DOM
-            const apiUrlInput = document.getElementById('apiUrl').value.trim();
-            const profileName = document.getElementById('profileName').value.trim();
-            const loader = document.getElementById('loader');
-            const errorBox = document.getElementById('errorBox');
-            const resultsSection = document.getElementById('resultsSection');
-            const tableBody = document.getElementById('charactersTableBody');
-            const displayProfile = document.getElementById('displayProfile');
-            const btnSubmit = document.getElementById('btnSubmit');
+    <!-- Indicador de Carga -->
+    <div id="loader" class="loader hidden"></div>
 
-            // Limpieza de estados anteriores
-            errorBox.classList.add('hidden');
-            resultsSection.classList.add('hidden');
-            tableBody.innerHTML = '';
-            
-            // Activar loader y deshabilitar botón
-            loader.classList.remove('hidden');
-            btnSubmit.disabled = true;
+    <!-- Caja de Errores -->
+    <div id="errorBox" class="error-box hidden"></div>
 
-            // Asegurar que la URL base no termine en barra diagonal '/'
-            const cleanApiUrl = apiUrlInput.endsWith('/') ? apiUrlInput.slice(0, -1) : apiUrlUrlInput;
+    <!-- Tabla de Resultados -->
+    <section id="resultsSection" class="hidden" style="margin-top: 2rem;">
+      <div class="divider"><span class="divider-icon">◆</span></div>
+      <div class="section-title">Personajes de <span id="displayProfile" style="color: var(--green-bright); margin-left: 0.4rem;"></span></div>
+      <div class="results-panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Clase</th>
+              <th>Nivel</th>
+              <th>Servidor</th>
+              <th>Gremio</th>
+            </tr>
+          </thead>
+          <tbody id="charactersTableBody">
+            <!-- Las filas se insertarán dinámicamente aquí -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
 
-            try {
-                // Llamada a la API agregando el encabezado de omisión para Ngrok
-                const response = await fetch(`${cleanApiUrl}/profile/${profileName}`, {
-                    method: "GET",
-                    headers: {
-                        "ngrok-skip-browser-warning": "69420", // Fuerza a ngrok a saltarse el warning
-                        "Content-Type": "application/json"
-                    }
-                });
-                
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.detail || `Error en el servidor: ${response.status}`);
+</div>
+
+<script>
+    async function fetchProfile(event) {
+        event.preventDefault();
+
+        // Captura de elementos del DOM
+        const apiUrlInput = document.getElementById('apiUrl').value.trim();
+        const profileName = document.getElementById('profileName').value.trim();
+        const loader = document.getElementById('loader');
+        const errorBox = document.getElementById('errorBox');
+        const resultsSection = document.getElementById('resultsSection');
+        const tableBody = document.getElementById('charactersTableBody');
+        const displayProfile = document.getElementById('displayProfile');
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        // Limpieza de estados anteriores
+        errorBox.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        tableBody.innerHTML = '';
+
+        // Activar loader y deshabilitar botón
+        loader.classList.remove('hidden');
+        btnSubmit.disabled = true;
+
+        // Asegurar que la URL base no termine en barra diagonal '/'
+        const cleanApiUrl = apiUrlInput.endsWith('/') ? apiUrlInput.slice(0, -1) : apiUrlInput;
+
+        try {
+            // Llamada a la API agregando el encabezado de omisión para Ngrok
+            const response = await fetch(`${cleanApiUrl}/profile/${profileName}`, {
+                method: "GET",
+                headers: {
+                    "ngrok-skip-browser-warning": "69420", // Fuerza a ngrok a saltarse el warning
+                    "Content-Type": "application/json"
                 }
+            });
 
-                const data = await response.json();
-
-                if (!data.characters || data.characters.length === 0) {
-                    throw new Error("El perfil no contiene personajes visibles.");
-                }
-
-                // Renderizar datos en la tabla
-                displayProfile.textContent = data.profile;
-                data.characters.forEach(char => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><strong>${char.name}</strong></td>
-                        <td>${char.class}</td>
-                        <td>${char.level}</td>
-                        <td>${char.server}</td>
-                        <td>${char.guild}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-
-                // Mostrar la sección de resultados
-                resultsSection.classList.remove('hidden');
-
-            } catch (error) {
-                // Manejo y despliegue de errores
-                errorBox.textContent = `Error: ${error.message}`;
-                errorBox.classList.remove('hidden');
-            } finally {
-                // Desactivar loader y rehabilitar botón
-                loader.classList.add('hidden');
-                btnSubmit.disabled = false;
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.detail || `Error en el servidor: ${response.status}`);
             }
+
+            const data = await response.json();
+
+            if (!data.characters || data.characters.length === 0) {
+                throw new Error("El perfil no contiene personajes visibles.");
+            }
+
+            // Renderizar datos en la tabla
+            displayProfile.textContent = data.profile;
+            data.characters.forEach(char => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${char.name}</strong></td>
+                    <td>${char.class}</td>
+                    <td>${char.level}</td>
+                    <td>${char.server}</td>
+                    <td>${char.guild}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Mostrar la sección de resultados
+            resultsSection.classList.remove('hidden');
+
+        } catch (error) {
+            // Manejo y despliegue de errores
+            errorBox.textContent = `Error: ${error.message}`;
+            errorBox.classList.remove('hidden');
+        } finally {
+            // Desactivar loader y rehabilitar botón
+            loader.classList.add('hidden');
+            btnSubmit.disabled = false;
         }
-    </script>
+    }
+</script>
 </body>
 </html>
