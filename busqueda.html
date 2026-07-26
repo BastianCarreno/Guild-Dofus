@@ -88,8 +88,14 @@
             const cleanApiUrl = apiUrlInput.endsWith('/') ? apiUrlInput.slice(0, -1) : apiUrlUrlInput;
 
             try {
-                // Llamada a la API construyendo la ruta completa
-                const response = await fetch(`${cleanApiUrl}/profile/${profileName}`);
+                // Llamada a la API agregando el encabezado de omisión para Ngrok
+                const response = await fetch(`${cleanApiUrl}/profile/${profileName}`, {
+                    method: "GET",
+                    headers: {
+                        "ngrok-skip-browser-warning": "69420", // Fuerza a ngrok a saltarse el warning
+                        "Content-Type": "application/json"
+                    }
+                });
                 
                 if (!response.ok) {
                     const errData = await response.json();
