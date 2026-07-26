@@ -19,7 +19,7 @@ app.add_middleware(
 BROWSER_URL = os.getenv("BROWSER_URL")
 
 async def scrape_ankama_profile(profile_name: str):
-    url = f"https://ankama.com{profile_name}"
+    url = f"https://account.ankama.com/en/ankama-profile/{profile_name}"
     
     if not BROWSER_URL:
         raise HTTPException(status_code=500, detail="Falta configurar la variable BROWSER_URL en Render.")
