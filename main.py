@@ -25,19 +25,31 @@ async def scrape_ankama_profile(profile_name: str):
         raise HTTPException(status_code=500, detail="Falta configurar la variable BROWSER_URL en Render.")
         
     async with async_playwright() as p:
-        # CONEXIÓN REMOTA: En lugar de lanzar Chromium localmente, usamos el navegador en la nube
-        browser = await p.chromium.connect(BROWSER_URL)
+        # CORRECCIÓN: Usamos connect_over_cdp para que sea 100% compatible con Browserless
+        try:
+            browser = await p.chromium.connect_over_cdp(BROWSER_URL)
+        except Exception as conn_error:
+            raise HTTPException(status_code=500, detail=f"Error de conexión con el navegador en la nube: {str(conn_error)}")
+
+        # Nota: connect_over_cdp ya trae un contexto por defecto del navegador remoto,
+        # pero para inyectar el User-Agent limpio de Cloudflare, forzamos un contexto nuevo.
         context = await browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
         page = await context.new_page()
         
         try:
-            await page.goto(url, wait_until="domcontentloaded")
+            # Añadimos un tiempo límite (timeout) de 30 segundos por si Cloudflare se tarda
+            await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            
+            # Le damos 4 segundos en el navegador remoto para renderizar el Javascript de Ankama
+            await asyncio.sleep(4) 
+            
             html_content = await page.content()
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error al cargar la página: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error al extraer los datos de la página: {str(e)}")
         finally:
+            await context.close()
             await browser.close()
             
     soup = BeautifulSoup(html_content, "html.parser")
@@ -62,6 +74,7 @@ async def scrape_ankama_profile(profile_name: str):
             })
             
     return characters
+
 
 @app.get("/profile/{profile_name}")
 async def get_profile(profile_name: str):
