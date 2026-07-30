@@ -828,7 +828,7 @@
       <div class="form-panel">
         <div class="form-row">
           <div class="form-field" style="flex-basis:100%">
-            <label class="form-label">Subir imagen desde el equipo</label>
+            <label class="form-label">Subir imagen desde el equipo (bucket "images")</label>
             <input class="form-input" type="file" id="inp-photoFile" accept="image/*" onchange="window.previewPhoto(event)" />
             <img class="photo-preview" id="photoPreviewImg" alt="Vista previa" />
             <div class="upload-progress" id="uploadProgress">Procesando imagen...</div>
@@ -971,7 +971,8 @@
     let membersList = [];
     let eventsList = [];
     let galleryList = [];
-    let pendingPhotoData = null;
+    let pendingPhotoBlob = null;
+    const GALLERY_BUCKET = 'images';
     let activeUserIndex = null;
     let tempOficios = [];
     let currentDate = new Date();
@@ -1415,7 +1416,7 @@
 
       galleryList.forEach((p, idx) => {
         if (!p || typeof p !== 'object') return;
-        const src = p.blob || p.url || '';
+        const src = p.url || p.blob || '';
         const caption = p.caption || '';
 
         const deleteBtn = isAdmin ? `<div class="gallery-delete" onclick="event.stopPropagation(); window.removePhoto(${idx})">✕</div>` : '';
@@ -1433,8 +1434,8 @@
       });
     }
 
-    // Convierte y comprime la imagen a un blob base64 (dataURL) manejable para la BD
-    function compressImageToDataURL(file, maxDim = 1400, quality = 0.78) {
+    // Convierte y comprime la imagen a un Blob JPEG optimizado para subir al bucket
+    function compressImageToBlob(file, maxDim = 1400, quality = 0.82) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -1455,7 +1456,10 @@
             canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', quality));
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("No se pudo generar la imagen comprimida."));
+            }, 'image/jpeg', quality);
           };
           img.onerror = () => reject(new Error("No se pudo leer la imagen."));
           img.src = e.target.result;
@@ -1470,7 +1474,7 @@
       const previewImg = document.getElementById('photoPreviewImg');
       const progress = document.getElementById('uploadProgress');
       if (!file) {
-        pendingPhotoData = null;
+        pendingPhotoBlob = null;
         previewImg.classList.remove('show');
         return;
       }
@@ -1481,12 +1485,14 @@
       }
       try {
         progress.classList.add('show');
-        pendingPhotoData = await compressImageToDataURL(file);
-        previewImg.src = pendingPhotoData;
+        progress.innerText = 'Procesando imagen...';
+        pendingPhotoBlob = await compressImageToBlob(file);
+        if (previewImg.src) URL.revokeObjectURL(previewImg.src);
+        previewImg.src = URL.createObjectURL(pendingPhotoBlob);
         previewImg.classList.add('show');
       } catch (err) {
         alert("No se pudo procesar la imagen: " + err.message);
-        pendingPhotoData = null;
+        pendingPhotoBlob = null;
       } finally {
         progress.classList.remove('show');
       }
@@ -1496,45 +1502,68 @@
       if (!isAdmin) return alert("Acceso denegado.");
       const captionInput = document.getElementById('inp-photoCaption');
       const fileInput = document.getElementById('inp-photoFile');
+      const progress = document.getElementById('uploadProgress');
       const btn = document.getElementById('btnAddPhoto');
       const caption = captionInput.value.trim();
 
-      if (!pendingPhotoData) return alert("Por favor selecciona una imagen desde tu equipo.");
+      if (!pendingPhotoBlob) return alert("Por favor selecciona una imagen desde tu equipo.");
 
       btn.disabled = true;
       btn.innerText = 'Subiendo...';
+      progress.innerText = 'Subiendo al bucket "images"...';
+      progress.classList.add('show');
+
       try {
-        galleryList.push({ blob: pendingPhotoData, caption });
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(GALLERY_BUCKET)
+          .upload(fileName, pendingPhotoBlob, { contentType: 'image/jpeg', upsert: false });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from(GALLERY_BUCKET).getPublicUrl(fileName);
+
+        galleryList.push({ url: urlData.publicUrl, path: fileName, caption });
         await saveGalleryData();
         renderGallery();
 
         // Reset del formulario
-        pendingPhotoData = null;
+        pendingPhotoBlob = null;
         captionInput.value = '';
         fileInput.value = '';
-        document.getElementById('photoPreviewImg').classList.remove('show');
+        const previewImg = document.getElementById('photoPreviewImg');
+        if (previewImg.src) URL.revokeObjectURL(previewImg.src);
+        previewImg.classList.remove('show');
       } catch (err) {
-        alert("Error al guardar la foto en la base de datos.");
-        galleryList.pop();
+        console.error(err);
+        alert("Error al subir la foto: " + (err.message || "Error desconocido."));
       } finally {
         btn.disabled = false;
         btn.innerText = 'Agregar Foto';
+        progress.classList.remove('show');
       }
     };
 
     window.removePhoto = async function(idx) {
       if (!isAdmin) return alert("Acceso denegado.");
-      if (confirm("¿Estás seguro de eliminar esta foto?")) {
-        galleryList.splice(idx, 1);
-        renderGallery();
-        await saveGalleryData();
+      if (!confirm("¿Estás seguro de eliminar esta foto?")) return;
+
+      const photo = galleryList[idx];
+      galleryList.splice(idx, 1);
+      renderGallery();
+      await saveGalleryData();
+
+      if (photo && photo.path) {
+        const { error } = await supabase.storage.from(GALLERY_BUCKET).remove([photo.path]);
+        if (error) console.error("Error al eliminar el archivo del bucket:", error);
       }
     };
 
     window.openLightbox = function(idx) {
       const p = galleryList[idx];
       if (!p) return;
-      document.getElementById('lightboxImg').src = p.blob || p.url || '';
+      document.getElementById('lightboxImg').src = p.url || p.blob || '';
       document.getElementById('lightboxCaption').innerText = p.caption || '';
       document.getElementById('lightbox').classList.add('open');
     };
