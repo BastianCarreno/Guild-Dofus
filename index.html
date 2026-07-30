@@ -47,6 +47,32 @@
 
     #app { position: relative; z-index: 1; }
 
+    /* --- ADMIN BAR --- */
+    .admin-bar {
+      background: var(--black-light);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.5rem 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.8rem;
+    }
+    .admin-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+    .badge-visitor { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border-color); }
+    .badge-admin { background: rgba(32, 223, 96, 0.15); color: var(--green-bright); border: 1px solid rgba(32, 223, 96, 0.3); }
+
+    .admin-only { display: none !important; }
+    body.is-admin .admin-only { display: block !important; }
+    body.is-admin .admin-only-flex { display: flex !important; }
+
     /* --- ORNAMENTAL DIVIDER --- */
     .divider {
       display: flex; align-items: center; gap: 1rem;
@@ -67,7 +93,7 @@
     /* --- HEADER / HERO --- */
     .hero {
       position: relative;
-      padding: 5rem 1.5rem 4rem;
+      padding: 4rem 1.5rem 4rem;
       text-align: center;
       border-bottom: 1px solid var(--border-color);
       background: linear-gradient(180deg, rgba(32, 223, 96, 0.03) 0%, transparent 100%);
@@ -101,9 +127,7 @@
       letter-spacing: -0.02em;
       position: relative; z-index: 1;
     }
-    .guild-name span {
-      color: var(--green-bright);
-    }
+    .guild-name span { color: var(--green-bright); }
     .guild-subtitle {
       font-family: 'Cinzel', serif;
       font-size: 0.85rem;
@@ -298,7 +322,6 @@
     }
     .oficio-harvest { background: rgba(32, 223, 96, 0.08); color: #4ade80; border: 1px solid rgba(32, 223, 96, 0.15); }
     .oficio-craft  { background: rgba(56, 189, 248, 0.08); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.15); }
-    .oficio-combat { background: rgba(248, 113, 113, 0.08); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.15); }
 
     /* --- FORM STYLING --- */
     .form-panel {
@@ -329,6 +352,10 @@
     .form-input:focus, .form-select:focus {
       border-color: var(--green-bright);
       box-shadow: 0 0 10px rgba(32, 223, 96, 0.1);
+    }
+    .form-input:disabled, .form-select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
     .form-select option { background: var(--black-card); }
 
@@ -417,10 +444,9 @@
       padding: 0.5rem;
       min-height: 80px;
       transition: all 0.2s;
-      cursor: pointer;
     }
     .cal-day:hover { border-color: var(--green-mid); }
-    .cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
+    .cal-day.empty { background: transparent; border-color: transparent; }
     .cal-day.today {
       border-color: var(--green-bright);
       background: rgba(32, 223, 96, 0.02);
@@ -496,6 +522,112 @@
     }
     .selected-oficio:hover { background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.2); color: #f87171; }
 
+    /* --- GALERÍA --- */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+    .gallery-item {
+      position: relative;
+      background: var(--black-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .gallery-item:hover {
+      border-color: rgba(32, 223, 96, 0.35);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(32, 223, 96, 0.05);
+    }
+    .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .gallery-item:hover img { transform: scale(1.06); }
+    .gallery-caption {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      padding: 0.6rem 0.75rem 0.5rem;
+      background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 60%, transparent 100%);
+      font-size: 0.75rem;
+      color: #e2e8f0;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gallery-delete {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      width: 26px; height: 26px;
+      border-radius: 6px;
+      background: rgba(5, 5, 5, 0.75);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: #f87171;
+      font-size: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s;
+      backdrop-filter: blur(4px);
+    }
+    .gallery-item:hover .gallery-delete { opacity: 1; }
+    .gallery-delete:hover { background: rgba(248, 113, 113, 0.15); border-color: #f87171; }
+    .gallery-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.9rem;
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+    }
+
+    /* --- LIGHTBOX --- */
+    .lightbox-overlay {
+      display: none; position: fixed; inset: 0; z-index: 250;
+      background: rgba(0,0,0,0.92);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+    .lightbox-overlay.open { display: flex; }
+    .lightbox-content {
+      max-width: 900px; width: 100%;
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+    .lightbox-content img {
+      max-width: 100%; max-height: 72vh;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+    }
+    .lightbox-caption {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      color: #ffffff;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+    .lightbox-close {
+      position: absolute; top: 1.25rem; right: 1.5rem;
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      background: var(--black-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lightbox-close:hover { border-color: var(--green-bright); color: var(--green-bright); }
+
     @media (max-width: 640px) {
       .nav-tab { padding: 1rem; font-size: 0.7rem; letter-spacing: 0.08em; }
       .hero-stats { gap: 1.5rem; }
@@ -503,6 +635,12 @@
       .day-event { display: none; }
     }
   </style></head><body><div id="app">
+
+  <!-- ADMIN BAR -->
+  <div class="admin-bar">
+    <span id="adminStatusBadge" class="admin-badge badge-visitor">Modo Lectura</span>
+    <button id="btnAdminToggle" class="btn btn-outline" style="font-size: 0.65rem; padding: 0.3rem 0.8rem;" onclick="window.toggleAdminMode()">Iniciar Sesión Admin</button>
+  </div>
 
   <!-- HERO -->
   <header class="hero">
@@ -531,6 +669,10 @@
         <div class="hero-stat-value" id="statEvents">0</div>
         <div class="hero-stat-label">Eventos este mes</div>
       </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value" id="statPhotos">0</div>
+        <div class="hero-stat-label">Fotos</div>
+      </div>
     </div>
   </header>
 
@@ -538,36 +680,41 @@
   <nav class="nav-tabs">
     <button class="nav-tab active" onclick="showSection('members', this)">Miembros</button>
     <button class="nav-tab" onclick="showSection('calendar', this)">Almanax</button>
+    <button class="nav-tab" onclick="showSection('gallery', this)">Galería</button>
     <button class="nav-tab" onclick="showSection('settings', this)">Gremio</button>
+    <a class="nav-tab admin-only" href="https://bastiancarreno.github.io/Guild-Dofus/busqueda.html" target="_blank">Buscar</a>
   </nav>
 
   <!-- MEMBERS SECTION -->
   <section class="section active" id="sec-members">
     <div class="notice">
-      Haz clic en un jugador para ver sus personajes. Usa el formulario de abajo para agregar nuevos miembros.
+      Haz clic en un jugador para ver sus personajes registrados.
     </div>
 
     <div class="section-title">Jugadores del Gremio</div>
     <div class="members-grid" id="membersGrid"></div>
 
-    <div class="divider"><span class="divider-icon">◆</span></div>
-    <div class="section-title">Agregar Jugador</div>
-    <div class="form-panel">
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Nombre de usuario</label>
-          <input class="form-input" id="inp-user" placeholder="Ej: Xarok_GT" />
+    <!-- SOLO ADMIN: AGREGAR JUGADOR -->
+    <div class="admin-only">
+      <div class="divider"><span class="divider-icon">◆</span></div>
+      <div class="section-title">Agregar Jugador</div>
+      <div class="form-panel">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Nombre de usuario</label>
+            <input class="form-input" id="inp-user" placeholder="Ej: Xarok_GT" />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Rol en el gremio</label>
+            <select class="form-select" id="inp-role">
+              <option value="member">Miembro</option>
+              <option value="officer">Mano Derecha</option>
+              <option value="leader">Líder</option>
+            </select>
+          </div>
         </div>
-        <div class="form-field">
-          <label class="form-label">Rol en el gremio</label>
-          <select class="form-select" id="inp-role">
-            <option value="member">Miembro</option>
-            <option value="officer">Oficial</option>
-            <option value="leader">Líder</option>
-          </select>
-        </div>
+        <button class="btn btn-gold" onclick="window.addMember()">Agregar Jugador</button>
       </div>
-      <button class="btn btn-gold" onclick="window.addMember()">Agregar Jugador</button>
     </div>
   </section>
 
@@ -592,32 +739,66 @@
     <div class="calendar-weekdays" id="calWeekdays"></div>
     <div class="calendar-grid" id="calGrid"></div>
 
-    <div class="divider"><span class="divider-icon">◆</span></div>
-    <div class="section-title">Agregar Evento</div>
-    <div class="form-panel">
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Día del mes</label>
-          <input class="form-input" id="inp-evDay" type="number" min="1" max="31" placeholder="15" />
+    <!-- SOLO ADMIN: AGREGAR EVENTO -->
+    <div class="admin-only">
+      <div class="divider"><span class="divider-icon">◆</span></div>
+      <div class="section-title">Agregar Evento</div>
+      <div class="form-panel">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Día del mes</label>
+            <input class="form-input" id="inp-evDay" type="number" min="1" max="31" placeholder="15" />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Tipo de evento</label>
+            <select class="form-select" id="inp-evType">
+              <option value="dungeon">Mazmorra grupal</option>
+              <option value="boss">Boss / Archimonstruo</option>
+              <option value="harvest">Recolecta masiva</option>
+              <option value="almanax">Bonus Almanax</option>
+              <option value="custom">Evento especial</option>
+            </select>
+          </div>
         </div>
-        <div class="form-field">
-          <label class="form-label">Tipo de evento</label>
-          <select class="form-select" id="inp-evType">
-            <option value="dungeon">Mazmorra grupal</option>
-            <option value="boss">Boss / Archimonstruo</option>
-            <option value="harvest">Recolecta masiva</option>
-            <option value="almanax">Bonus Almanax</option>
-            <option value="custom">Evento especial</option>
-          </select>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Descripción</label>
+            <input class="form-input" id="inp-evDesc" placeholder="Ej: Mazmorra de Kanigroula x8" />
+          </div>
         </div>
+        <button class="btn btn-gold" onclick="window.addEvent()">Agregar al Almanax</button>
       </div>
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Descripción</label>
-          <input class="form-input" id="inp-evDesc" placeholder="Ej: Mazmorra de Kanigroula x8" />
+    </div>
+  </section>
+
+  <!-- GALLERY SECTION -->
+  <section class="section" id="sec-gallery">
+    <div class="notice">
+      Haz clic en una foto para verla en tamaño completo.
+    </div>
+
+    <div class="section-title">Galería del Gremio</div>
+    <div class="gallery-grid" id="galleryGrid"></div>
+
+    <!-- SOLO ADMIN: AGREGAR FOTO -->
+    <div class="admin-only">
+      <div class="divider"><span class="divider-icon">◆</span></div>
+      <div class="section-title">Agregar Foto</div>
+      <div class="form-panel">
+        <div class="form-row">
+          <div class="form-field" style="flex-basis:100%">
+            <label class="form-label">URL de la imagen</label>
+            <input class="form-input" id="inp-photoUrl" placeholder="https://ejemplo.com/imagen.jpg" />
+          </div>
         </div>
+        <div class="form-row">
+          <div class="form-field" style="flex-basis:100%">
+            <label class="form-label">Descripción (opcional)</label>
+            <input class="form-input" id="inp-photoCaption" placeholder="Ej: Mazmorra de Kanigroula - Victoria del clan" />
+          </div>
+        </div>
+        <button class="btn btn-gold" onclick="window.addPhoto()">Agregar Foto</button>
       </div>
-      <button class="btn btn-gold" onclick="window.addEvent()">Agregar al Almanax</button>
     </div>
   </section>
 
@@ -647,13 +828,15 @@
           <input class="form-input" id="set-desc" value="Buscamos el poder en cada rincón de las Doce Tierras. El fin justifica los medios." />
         </div>
       </div>
-      <button class="btn btn-gold" onclick="window.saveSettings()">Guardar Cambios</button>
+      <div class="admin-only" style="margin-top: 1rem;">
+        <button class="btn btn-gold" onclick="window.saveSettings()">Guardar Cambios</button>
+      </div>
     </div>
 
     <div class="divider"><span class="divider-icon">◆</span></div>
     <div class="section-title">Sincronización en la Nube</div>
     <div class="form-panel" style="font-size:0.9rem; color:var(--text-muted); line-height:1.8;">
-      <p>Este panel está sincronizado directamente con tu base de datos en <strong style="color:var(--green-bright)">Supabase</strong>. Todos los cambios se reflejan en tiempo real para todos los miembros.</p>
+      <p>Este panel está sincronizado directamente con la base de datos en <strong style="color:var(--green-bright)">Supabase</strong>. Todos los datos son visibles para los visitantes, pero sólo los administradores autenticados pueden realizar modificaciones.</p>
     </div>
   </section></div><!-- MODAL: Agregar personaje --><div class="modal-overlay" id="pjModal">
   <div class="modal">
@@ -666,10 +849,10 @@
       <div class="form-field">
         <label class="form-label">Clase</label>
         <select class="form-select" id="pj-class">
-          <option>Yopuka</option><option>Cra</option><option>Ecaflip</option>
+          <option>Yopuka</option><option>Ocra</option><option>Anutrof</option>
           <option>Eniripsa</option><option>Feca</option><option>Osamodas</option><option>Pandawa</option>
           <option>Sadida</option><option>Sacrógrito</option><option>Sram</option><option>Xelor</option>
-          <option>Tymador</option><option>Zúbal</option><option>Hiperago</option><option>Oginak</option>
+          <option>Tymador</option><option>Zobal</option><option>Stimer</option><option>zurcarák</option>
         </select>
       </div>
     </div>
@@ -701,6 +884,11 @@
               <option value="Manitas|craft">Manitas</option>
               <option value="Conductor|craft">Conductor de Mágia</option>
             </optgroup>
+            <optgroup label="Mago">
+              <option value="SastreMago|craft">SastreMago</option>
+              <option value="JoyeroMago|craft">JoyeroMago</option>
+              <option value="ZapateroMago|craft">ZapateroMago</option>
+            </optgroup>
           </select>
         </div>
         <div style="display:flex; align-items:flex-end;">
@@ -715,21 +903,94 @@
     </div>
   </div></div>
 
-  <!-- SCRIPT INTEGRADO CON SUPABASE -->
+  <!-- LIGHTBOX: Ver foto en grande -->
+  <div class="lightbox-overlay" id="lightbox" onclick="if(event.target===this) window.closeLightbox()">
+    <button class="lightbox-close" onclick="window.closeLightbox()">✕</button>
+    <div class="lightbox-content">
+      <img id="lightboxImg" src="" alt="" />
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+  </div>
+
+  <!-- SCRIPT INTEGRADO CON SUPABASE Y CONTROL DE ADMIN -->
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-    // Cliente de Supabase
+    // Configuración
     const SUPABASE_URL = 'https://mvhbzwcflcddtqiwljsf.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_5eh73ojnkKuMnYWv06REfA_dUL2ZvlW';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // CONTRASEÑA ADMIN (Puedes cambiarla aquí)
+    const ADMIN_PASSWORD = 'admin123';
+
     // Estado global de la aplicación
     let membersList = [];
     let eventsList = [];
+    let galleryList = [];
     let activeUserIndex = null;
     let tempOficios = [];
     let currentDate = new Date();
+    let isAdmin = false;
+
+    // --- AUTENTICACIÓN / MODO ADMIN ---
+    window.toggleAdminMode = function() {
+      if (isAdmin) {
+        isAdmin = false;
+        sessionStorage.removeItem('guild_admin');
+        updateAdminUI();
+      } else {
+        const pass = prompt("Ingresa la contraseña de Administrador:");
+        if (pass === ADMIN_PASSWORD) {
+          isAdmin = true;
+          sessionStorage.setItem('guild_admin', 'true');
+          updateAdminUI();
+        } else if (pass !== null) {
+          alert("Contraseña incorrecta.");
+        }
+      }
+    };
+
+    function checkAdminSession() {
+      if (sessionStorage.getItem('guild_admin') === 'true') {
+        isAdmin = true;
+      }
+      updateAdminUI();
+    }
+
+    function updateAdminUI() {
+      const body = document.body;
+      const statusBadge = document.getElementById('adminStatusBadge');
+      const toggleBtn = document.getElementById('btnAdminToggle');
+      const settingInputs = ['set-name', 'set-level', 'set-server', 'set-desc'];
+
+      if (isAdmin) {
+        body.classList.add('is-admin');
+        statusBadge.innerText = 'Modo Admin';
+        statusBadge.className = 'admin-badge badge-admin';
+        toggleBtn.innerText = 'Cerrar Sesión Admin';
+        
+        // Habilitar edición de inputs en Settings
+        settingInputs.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.removeAttribute('disabled');
+        });
+      } else {
+        body.classList.remove('is-admin');
+        statusBadge.innerText = 'Modo Lectura';
+        statusBadge.className = 'admin-badge badge-visitor';
+        toggleBtn.innerText = 'Iniciar Sesión Admin';
+
+        // Deshabilitar edición de inputs en Settings para visitantes
+        settingInputs.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.setAttribute('disabled', 'true');
+        });
+      }
+
+      // Re-renderizar miembros para mostrar u ocultar botones de borrado/añadido de PJ
+      renderMembers();
+    }
 
     // Navegación
     window.showSection = function(secId, btnEl) {
@@ -742,7 +1003,7 @@
     // Cargar datos desde Supabase
     async function loadFromSupabase() {
       try {
-        // 1. Cargar Configuración (guild_config con id = '1')
+        // 1. Configuración
         let { data: configData } = await supabase
           .from('guild_config')
           .select('*')
@@ -757,7 +1018,7 @@
           renderConfig(defaultConfig);
         }
 
-        // 2. Cargar Miembros (guild_data con id = 'members')
+        // 2. Miembros
         let { data: membersData } = await supabase
           .from('guild_data')
           .select('*')
@@ -765,13 +1026,13 @@
           .maybeSingle();
 
         if (membersData) {
-          membersList = membersData.lista || [];
+          membersList = Array.isArray(membersData.lista) ? membersData.lista : [];
         } else {
           membersList = [];
           await supabase.from('guild_data').insert([{ id: 'members', lista: [], total: 0 }]);
         }
 
-        // 3. Cargar Eventos (guild_data con id = 'events')
+        // 3. Eventos
         let { data: eventsData } = await supabase
           .from('guild_data')
           .select('*')
@@ -779,14 +1040,29 @@
           .maybeSingle();
 
         if (eventsData) {
-          eventsList = eventsData.lista || [];
+          eventsList = Array.isArray(eventsData.lista) ? eventsData.lista : [];
         } else {
           eventsList = [];
           await supabase.from('guild_data').insert([{ id: 'events', lista: [], total: 0 }]);
         }
 
+        // 4. Galería
+        let { data: galleryData } = await supabase
+          .from('guild_data')
+          .select('*')
+          .eq('id', 'gallery')
+          .maybeSingle();
+
+        if (galleryData) {
+          galleryList = Array.isArray(galleryData.lista) ? galleryData.lista : [];
+        } else {
+          galleryList = [];
+          await supabase.from('guild_data').insert([{ id: 'gallery', lista: [], total: 0 }]);
+        }
+
         renderMembers();
         renderCalendar();
+        renderGallery();
         updateStats();
 
       } catch (err) {
@@ -807,8 +1083,10 @@
       document.getElementById('set-desc').value = data.desc || '';
     }
 
-    // Guardar Configuración
+    // Guardar Configuración (Solo Admin)
     window.saveSettings = async function() {
+      if (!isAdmin) return alert("Acceso denegado: debes ser Administrador.");
+
       const payload = {
         id: '1',
         name: document.getElementById('set-name').value,
@@ -820,14 +1098,15 @@
       const { error } = await supabase.from('guild_config').upsert(payload);
       if (!error) {
         renderConfig(payload);
-        alert("¡Configuración guardada correctamente en Supabase!");
+        alert("¡Configuración guardada correctamente!");
       } else {
         alert("Error al guardar la configuración.");
       }
     };
 
-    // Guardar Miembros en Supabase
+    // Guardar datos en Supabase
     async function saveMembersData() {
+      if (!isAdmin) return;
       await supabase.from('guild_data').upsert({
         id: 'members',
         lista: membersList,
@@ -836,8 +1115,8 @@
       updateStats();
     }
 
-    // Guardar Eventos en Supabase
     async function saveEventsData() {
+      if (!isAdmin) return;
       await supabase.from('guild_data').upsert({
         id: 'events',
         lista: eventsList,
@@ -846,36 +1125,58 @@
       updateStats();
     }
 
+    async function saveGalleryData() {
+      if (!isAdmin) return;
+      await supabase.from('guild_data').upsert({
+        id: 'gallery',
+        lista: galleryList,
+        total: galleryList.length
+      });
+      updateStats();
+    }
+
     // Renderizar Miembros
     function renderMembers() {
       const grid = document.getElementById('membersGrid');
+      if (!grid) return;
       grid.innerHTML = '';
-    
+
+      if (!Array.isArray(membersList)) membersList = [];
+
       membersList.forEach((m, idx) => {
-        // Validar que exista un objeto de miembro válido
-        if (!m) return;
-    
-        // Asegurar que exista 'user' para evitar el error de charAt
-        const userName = m.user || 'Sin nombre';
-        const initial = userName.charAt(0).toUpperCase();
+        if (!m || typeof m !== 'object') return;
+
+        const userName = (m.user && typeof m.user === 'string') ? m.user.trim() : 'Sin Nombre';
+        const initial = userName.length > 0 ? userName.charAt(0).toUpperCase() : '?';
         
-        const roleClass = m.role === 'leader' ? 'role-leader' : m.role === 'officer' ? 'role-officer' : 'role-member';
-        const roleLabel = m.role === 'leader' ? 'Líder' : m.role === 'officer' ? 'Oficial' : 'Miembro';
-    
+        const role = m.role || 'member';
+        const roleClass = role === 'leader' ? 'role-leader' : role === 'officer' ? 'role-officer' : 'role-member';
+        const roleLabel = role === 'leader' ? 'Líder' : role === 'officer' ? 'Mano Derecha' : 'Miembro';
+
         let pjsHtml = '';
         if (m.pjs && Array.isArray(m.pjs) && m.pjs.length > 0) {
           pjsHtml = m.pjs.map((pj, pjIdx) => {
-            const oficiosHtml = pj.oficios ? pj.oficios.map(o => `<span class="oficio-tag oficio-${o.type}">${o.name}</span>`).join('') : '';
+            if (!pj) return '';
+            const pjName = pj.name || 'Desconocido';
+            const pjClass = pj.class || 'Clase';
+            const pjLevel = pj.level || 1;
+
+            const oficiosHtml = (pj.oficios && Array.isArray(pj.oficios)) 
+              ? pj.oficios.map(o => `<span class="oficio-tag oficio-${o.type || 'craft'}">${o.name || ''}</span>`).join('') 
+              : '';
+
+            const deletePjBtn = isAdmin ? `<button class="btn-danger" onclick="window.removePJ(${idx}, ${pjIdx})">✕</button>` : '';
+
             return `
               <div class="pj-item">
                 <div class="pj-header">
                   <div>
-                    <span class="pj-name">${pj.name || 'Sin nombre'}</span>
-                    <span class="pj-class">• ${pj.class || 'Clase'}</span>
+                    <span class="pj-name">${pjName}</span>
+                    <span class="pj-class">• ${pjClass}</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span class="pj-level">Nv. ${pj.level || 1}</span>
-                    <button class="btn-danger" onclick="window.removePJ(${idx}, ${pjIdx})">✕</button>
+                    <span class="pj-level">Nv. ${pjLevel}</span>
+                    ${deletePjBtn}
                   </div>
                 </div>
                 <div class="pj-oficios">${oficiosHtml}</div>
@@ -884,7 +1185,14 @@
         } else {
           pjsHtml = '<p style="font-size:0.8rem; color:var(--text-muted); font-style:italic;">Sin personajes registrados.</p>';
         }
-    
+
+        const adminControls = isAdmin ? `
+          <div style="margin-top:1rem; display:flex; justify-space-between; align-items:center;">
+            <button class="btn btn-outline" style="font-size:0.65rem; padding:0.3rem 0.6rem;" onclick="window.openPJModal(${idx})">+ Agregar PJ</button>
+            <button class="btn-danger" onclick="window.removeMember(${idx})">Eliminar Jugador</button>
+          </div>
+        ` : '';
+
         const card = document.createElement('div');
         card.className = 'member-card';
         card.innerHTML = `
@@ -896,10 +1204,7 @@
           </div>
           <div class="member-body">
             ${pjsHtml}
-            <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center;">
-              <button class="btn btn-outline" style="font-size:0.65rem; padding:0.3rem 0.6rem;" onclick="window.openPJModal(${idx})">+ Agregar PJ</button>
-              <button class="btn-danger" onclick="window.removeMember(${idx})">Eliminar Jugador</button>
-            </div>
+            ${adminControls}
           </div>
         `;
         grid.appendChild(card);
@@ -907,6 +1212,7 @@
     }
 
     window.addMember = async function() {
+      if (!isAdmin) return alert("Acceso denegado.");
       const user = document.getElementById('inp-user').value.trim();
       const role = document.getElementById('inp-role').value;
       if (!user) return alert("Por favor ingresa un nombre de usuario.");
@@ -918,6 +1224,7 @@
     };
 
     window.removeMember = async function(idx) {
+      if (!isAdmin) return alert("Acceso denegado.");
       if (confirm("¿Estás seguro de eliminar a este jugador y todos sus personajes?")) {
         membersList.splice(idx, 1);
         renderMembers();
@@ -927,6 +1234,7 @@
 
     // Modal Personajes
     window.openPJModal = function(idx) {
+      if (!isAdmin) return alert("Acceso denegado.");
       activeUserIndex = idx;
       tempOficios = [];
       document.getElementById('pj-name').value = '';
@@ -961,6 +1269,7 @@
     };
 
     window.savePJ = async function() {
+      if (!isAdmin) return alert("Acceso denegado.");
       const name = document.getElementById('pj-name').value.trim();
       const pjClass = document.getElementById('pj-class').value;
       const level = parseInt(document.getElementById('pj-level').value, 10) || 1;
@@ -976,6 +1285,7 @@
     };
 
     window.removePJ = async function(mIdx, pjIdx) {
+      if (!isAdmin) return alert("Acceso denegado.");
       membersList[mIdx].pjs.splice(pjIdx, 1);
       renderMembers();
       await saveMembersData();
@@ -1024,6 +1334,7 @@
     };
 
     window.addEvent = async function() {
+      if (!isAdmin) return alert("Acceso denegado.");
       const day = parseInt(document.getElementById('inp-evDay').value, 10);
       const type = document.getElementById('inp-evType').value;
       const desc = document.getElementById('inp-evDesc').value.trim();
@@ -1045,18 +1356,96 @@
       await saveEventsData();
     };
 
-    // Estadísticas del Hero
+    // Galería
+    function renderGallery() {
+      const grid = document.getElementById('galleryGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (!Array.isArray(galleryList)) galleryList = [];
+
+      if (galleryList.length === 0) {
+        grid.innerHTML = '<div class="gallery-empty">Aún no hay fotos en la galería.</div>';
+        return;
+      }
+
+      galleryList.forEach((p, idx) => {
+        if (!p || typeof p !== 'object') return;
+        const url = p.url || '';
+        const caption = p.caption || '';
+
+        const deleteBtn = isAdmin ? `<div class="gallery-delete" onclick="event.stopPropagation(); window.removePhoto(${idx})">✕</div>` : '';
+        const captionHtml = caption ? `<div class="gallery-caption">${caption}</div>` : '';
+
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        item.onclick = () => window.openLightbox(idx);
+        item.innerHTML = `
+          <img src="${url}" alt="${caption}" loading="lazy" onerror="this.parentElement.style.opacity='0.35'" />
+          ${captionHtml}
+          ${deleteBtn}
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    window.addPhoto = async function() {
+      if (!isAdmin) return alert("Acceso denegado.");
+      const urlInput = document.getElementById('inp-photoUrl');
+      const captionInput = document.getElementById('inp-photoCaption');
+      const url = urlInput.value.trim();
+      const caption = captionInput.value.trim();
+
+      if (!url) return alert("Por favor ingresa la URL de la imagen.");
+
+      galleryList.push({ url, caption });
+      urlInput.value = '';
+      captionInput.value = '';
+      renderGallery();
+      await saveGalleryData();
+    };
+
+    window.removePhoto = async function(idx) {
+      if (!isAdmin) return alert("Acceso denegado.");
+      if (confirm("¿Estás seguro de eliminar esta foto?")) {
+        galleryList.splice(idx, 1);
+        renderGallery();
+        await saveGalleryData();
+      }
+    };
+
+    window.openLightbox = function(idx) {
+      const p = galleryList[idx];
+      if (!p) return;
+      document.getElementById('lightboxImg').src = p.url || '';
+      document.getElementById('lightboxCaption').innerText = p.caption || '';
+      document.getElementById('lightbox').classList.add('open');
+    };
+
+    window.closeLightbox = function() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.getElementById('lightboxImg').src = '';
+    };
+
+    // Estadísticas
     function updateStats() {
       document.getElementById('statUsers').innerText = membersList.length;
       let totalPJs = 0;
-      membersList.forEach(m => { if (m.pjs) totalPJs += m.pjs.length; });
+      membersList.forEach(m => { if (m && m.pjs) totalPJs += m.pjs.length; });
       document.getElementById('statPJs').innerText = totalPJs;
 
-      const currentMonthEvs = eventsList.filter(e => e.month === currentDate.getMonth() && e.year === currentDate.getFullYear());
+      const currentMonthEvs = eventsList.filter(e => e && e.month === currentDate.getMonth() && e.year === currentDate.getFullYear());
       document.getElementById('statEvents').innerText = currentMonthEvs.length;
+
+      document.getElementById('statPhotos').innerText = Array.isArray(galleryList) ? galleryList.length : 0;
     }
 
-    // Cargar datos
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') window.closeLightbox();
+    });
+
+    // Inicializar
+    checkAdminSession();
     loadFromSupabase();
   </script>
 </body>
